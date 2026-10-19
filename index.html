@@ -90,6 +90,15 @@ footer{font-size:15px;color:var(--muted)}
         <div class="row"><span class="best">RECORDE <b id="b3">0</b></span><span class="play">JOGAR</span></div>
       </div>
     </a>
+    <a class="gamecard" href="argola/">
+      <img class="thumb" src="argola/thumb.png" alt="Tabuleiro de madeira com pinos coloridos e argolas">
+      <div class="info">
+        <span class="tag">MIRA · FORÇA</span>
+        <h2>Jogo da Argola</h2>
+        <p>Mire, segure para dar força e encaixe a argola nos pinos antes que eles desçam.</p>
+        <div class="row"><span class="best">RECORDE <b id="b4">0</b></span><span class="play">JOGAR</span></div>
+      </div>
+    </a>
     <div class="gamecard soon">
       <span class="tag">EM BREVE</span>
       <p>Mais jogos chegando nesta tela.</p>
@@ -99,7 +108,7 @@ footer{font-size:15px;color:var(--muted)}
   <footer>Dica: no iPhone, Compartilhar → Adicionar à Tela de Início para jogar em tela cheia, até sem internet.</footer>
 </div>
 <script>
-try{document.getElementById('b1').textContent=localStorage.getItem('mx-deserto-best')||0;document.getElementById('b2').textContent=localStorage.getItem('estrada-best')||0;document.getElementById('b3').textContent=localStorage.getItem('patinhos-best')||0}catch(e){}
+try{document.getElementById('b1').textContent=localStorage.getItem('mx-deserto-best')||0;document.getElementById('b2').textContent=localStorage.getItem('estrada-best')||0;document.getElementById('b3').textContent=localStorage.getItem('patinhos-best')||0;document.getElementById('b4').textContent=localStorage.getItem('argola-best')||0}catch(e){}
 if('serviceWorker' in navigator){addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})})}
 </script>
 </body>
