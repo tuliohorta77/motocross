@@ -1,5 +1,8 @@
-# Motocross do Deserto
+# Fliperama
 
-Jogo de motocross para celular: rampas, cactos, tambores, cones, pneus e mortais. Personagens: moto, skate, carrinho, caminhão e dino.
+Jogos para celular, feitos com o Claude.
+
+- **Motocross do Deserto** (`deserto/`): lateral, rampas, mortais e cactos.
+- **Tiro na Estrada** (`estrada/`): visão de cima estilo Atari, desvie e atire nos obstáculos.
 
 Jogar: https://tuliohorta77.github.io/motocross/
