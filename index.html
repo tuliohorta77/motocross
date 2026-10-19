@@ -59,7 +59,7 @@ footer{font-size:15px;color:var(--muted)}
   <header>
     <span class="coins">INSIRA SUA FICHA</span>
     <h1>FLIPERAMA</h1>
-    <p class="sub">Escolha um jogo. Seu personagem favorito vale nos dois.</p>
+    <p class="sub">Escolha um jogo. O personagem que você escolher vale na moto e na estrada.</p>
   </header>
 
   <main class="grid">
@@ -81,6 +81,15 @@ footer{font-size:15px;color:var(--muted)}
         <div class="row"><span class="best">RECORDE <b id="b2">0</b></span><span class="play">JOGAR</span></div>
       </div>
     </a>
+    <a class="gamecard" href="patinhos/">
+      <img class="thumb" src="patinhos/thumb.png" alt="Patinhos amarelos de lata passando em trilhos de uma barraca de feira">
+      <div class="info">
+        <span class="tag">TOQUE · PONTARIA</span>
+        <h2>Patinhos da Feira</h2>
+        <p>Toque nos patinhos para derrubar antes que o tempo acabe. Fuja das placas de "não".</p>
+        <div class="row"><span class="best">RECORDE <b id="b3">0</b></span><span class="play">JOGAR</span></div>
+      </div>
+    </a>
     <div class="gamecard soon">
       <span class="tag">EM BREVE</span>
       <p>Mais jogos chegando nesta tela.</p>
@@ -90,7 +99,7 @@ footer{font-size:15px;color:var(--muted)}
   <footer>Dica: no iPhone, Compartilhar → Adicionar à Tela de Início para jogar em tela cheia, até sem internet.</footer>
 </div>
 <script>
-try{document.getElementById('b1').textContent=localStorage.getItem('mx-deserto-best')||0;document.getElementById('b2').textContent=localStorage.getItem('estrada-best')||0}catch(e){}
+try{document.getElementById('b1').textContent=localStorage.getItem('mx-deserto-best')||0;document.getElementById('b2').textContent=localStorage.getItem('estrada-best')||0;document.getElementById('b3').textContent=localStorage.getItem('patinhos-best')||0}catch(e){}
 if('serviceWorker' in navigator){addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})})}
 </script>
 </body>
