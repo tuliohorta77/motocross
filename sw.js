@@ -1,5 +1,5 @@
 // Busca sempre a versão nova quando há internet; sem internet, usa a cópia guardada
-const CACHE='fliperama-v5';
+const CACHE='fliperama-v6';
 const FILES=['./','index.html','manifest.json','icon-180.png','icon-192.png','icon-512.png',
   'deserto/','deserto/index.html','deserto/thumb.png','estrada/','estrada/index.html','estrada/thumb.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>Promise.all(FILES.map(f=>c.add(f).catch(()=>{})))).then(()=>self.skipWaiting()))});
