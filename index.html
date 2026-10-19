@@ -99,6 +99,15 @@ footer{font-size:15px;color:var(--muted)}
         <div class="row"><span class="best">RECORDE <b id="b4">0</b></span><span class="play">JOGAR</span></div>
       </div>
     </a>
+    <a class="gamecard" href="penalti/">
+      <img class="thumb" src="penalti/thumb.png" alt="Jogador de camisa 10 chutando pênalti e goleiro pulando no canto">
+      <div class="info">
+        <span class="tag">FUTEBOL · DESLIZE O DEDO</span>
+        <h2>Cobrança de Pênalti</h2>
+        <p>Passe o dedo para chutar: escolha o canto, a altura e o efeito. Três erros e acabou.</p>
+        <div class="row"><span class="best">RECORDE <b id="b5">0</b></span><span class="play">JOGAR</span></div>
+      </div>
+    </a>
     <div class="gamecard soon">
       <span class="tag">EM BREVE</span>
       <p>Mais jogos chegando nesta tela.</p>
@@ -108,7 +117,7 @@ footer{font-size:15px;color:var(--muted)}
   <footer>Dica: no iPhone, Compartilhar → Adicionar à Tela de Início para jogar em tela cheia, até sem internet.</footer>
 </div>
 <script>
-try{document.getElementById('b1').textContent=localStorage.getItem('mx-deserto-best')||0;document.getElementById('b2').textContent=localStorage.getItem('estrada-best')||0;document.getElementById('b3').textContent=localStorage.getItem('patinhos-best')||0;document.getElementById('b4').textContent=localStorage.getItem('argola-best')||0}catch(e){}
+try{document.getElementById('b1').textContent=localStorage.getItem('mx-deserto-best')||0;document.getElementById('b2').textContent=localStorage.getItem('estrada-best')||0;document.getElementById('b3').textContent=localStorage.getItem('patinhos-best')||0;document.getElementById('b4').textContent=localStorage.getItem('argola-best')||0;document.getElementById('b5').textContent=localStorage.getItem('penalti-best')||0}catch(e){}
 if('serviceWorker' in navigator){addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})})}
 </script>
 </body>
