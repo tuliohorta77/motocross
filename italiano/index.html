@@ -201,10 +201,27 @@ try{best=+localStorage.getItem('italiano-l1-best')||0}catch(e){}
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 
 /* ---------- voz: falar (megafone) ---------- */
+// 1º: arquivo de áudio gravado (toca mesmo no modo silencioso do iPhone). 2º: voz sintética do aparelho, se o arquivo falhar.
+const player=new Audio();player.preload='auto';player.setAttribute('playsinline','');
+const slug=w=>w.normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+const SILENT='data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjYwLjE2LjEwMAAAAAAAAAAAAAAA//NwwAAAAAAAAAAAAEluZm8AAAAPAAAABgAAAykAWlpaWlpaWlpaWlpaWlpaWnt7e3t7e3t7e3t7e3t7e3t7nJycnJycnJycnJycnJycnL29vb29vb29vb29vb29vb293t7e3t7e3t7e3t7e3t7e3t7/////////////////////AAAAAExhdmM2MC4zMQAAAAAAAAAAAAAAACQCowAAAAAAAAMpso+sIAAAAAAAAAAAAAAAAAD/80DEAAAAA0gAAAAATEFNRTMuMTAwVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQsRbAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQMSkAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NCxKMAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NAxKQAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/80LEowAAA0gAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVU=';
+let unlocked=false;
+function unlockAudio(){ // chamado dentro de um toque: libera tocar áudio depois, sem toque
+  try{if(navigator.audioSession)navigator.audioSession.type='playback'}catch(e){}
+  if(unlocked)return;unlocked=true;try{player.src=SILENT;const p=player.play();if(p&&p.catch)p.catch(()=>{unlocked=false})}catch(e){unlocked=false}}
 let itVoice=null;
 function pickVoice(){try{const vs=speechSynthesis.getVoices();itVoice=vs.find(v=>/^it(-|_|$)/i.test(v.lang)&&/alice|federica|luca|paola/i.test(v.name))||vs.find(v=>/^it/i.test(v.lang))||null}catch(e){}}
-if('speechSynthesis' in window){pickVoice();speechSynthesis.onvoiceschanged=pickVoice}
-function say(text){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='it-IT';if(itVoice)u.voice=itVoice;u.rate=.82;u.pitch=1;speechSynthesis.speak(u)}catch(e){}}
+if('speechSynthesis' in window){pickVoice();try{speechSynthesis.onvoiceschanged=pickVoice}catch(e){}}
+function synth(text){try{const ss=speechSynthesis;const go=()=>{try{ss.resume()}catch(_){}const u=new SpeechSynthesisUtterance(text);u.lang='it-IT';if(itVoice)u.voice=itVoice;u.rate=.85;ss.speak(u)};
+  if(ss.speaking||ss.pending){ss.cancel();setTimeout(go,150)}else go()}catch(e){}}
+function say(w){ // w = palavra do jogo
+  const text=full(w);let started=false;
+  try{player.pause();player.src='audio/'+slug(w.it)+'.mp3';player.currentTime=0;
+    player.onplaying=()=>{started=true};
+    const p=player.play();if(p&&p.catch)p.catch(()=>{if(!started){started=true;synth(text)}})}catch(e){synth(text)}
+  player.onerror=()=>{if(!started){started=true;synth(text)}};
+  setTimeout(()=>{if(!started&&player.paused){synth(text);$('note').textContent='Sem som? Aumente o volume do iPhone.'}},1500);
+}
 
 /* ---------- sons curtos ---------- */
 let AC=null;function ac(){if(!AC){try{AC=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}}return AC}
@@ -227,10 +244,10 @@ function setupRec(){if(!SR)return null;const r=new SR();r.lang='it-IT';r.interim
   return r}
 function micUI(){$('mic').classList.toggle('on',listening);$('micTxt').textContent=listening?'Ouvindo…':'Falar'}
 function heardShow(t){$('heard').innerHTML='Ouvi: <b></b>';$('heard').querySelector('b').textContent='“'+t.trim()+'”'}
-$('mic').addEventListener('click',()=>{ac();if(state!=='play'||phase!=='ask')return;
+$('mic').addEventListener('click',()=>{ac();unlockAudio();if(state!=='play'||phase!=='ask')return;
   if(!SR){showType(true);return}
   if(listening){try{rec.stop()}catch(_){}return}
-  try{speechSynthesis.cancel()}catch(e){}
+  try{player.pause();speechSynthesis.cancel()}catch(e){}
   rec=rec||setupRec();heardFinal='';try{rec.start();listening=true;micUI();$('note').textContent=''}catch(e){try{rec.abort()}catch(_){}rec=setupRec();try{rec.start();listening=true;micUI()}catch(_){}}});
 
 /* ---------- digitar ---------- */
@@ -241,7 +258,7 @@ $('typeForm').addEventListener('submit',e=>{e.preventDefault();if(phase!=='ask')
 
 /* ---------- megafone ---------- */
 $('hear').addEventListener('click',()=>{if(state!=='play'||phase!=='ask')return;if(listening){try{rec.stop()}catch(_){}}
-  helped=true;$('hear').classList.add('used');$('badge').hidden=false;say(deck[idx].it)});
+  unlockAudio();helped=true;$('hear').classList.add('used');$('badge').hidden=false;say(deck[idx])});
 
 /* ---------- rodada ---------- */
 function hearts(){$('hearts').textContent='❤️'.repeat(lives)+'🤍'.repeat(LIVES-lives)}
@@ -258,19 +275,19 @@ function right(){if(phase!=='ask')return;phase='done';const pts=helped?5:10;scor
 function wrongTry(){if(phase!=='ask')return;sWrong();$('pic').classList.remove('shake','pop');void $('pic').offsetWidth;$('pic').classList.add('shake');
   const h=$('heard');if(!h.textContent)h.textContent='Não foi dessa vez.';h.insertAdjacentText('beforeend','  · tente de novo')}
 function timeout(){if(phase!=='ask')return;phase='done';if(listening){try{rec.abort()}catch(_){}}lives--;missed.push(deck[idx]);sWrong();reveal(false);
-  $('heard').textContent='Acabou o tempo!';say(deck[idx].it);hud();nextT=setTimeout(next,2400)}
+  $('heard').textContent='Acabou o tempo!';say(deck[idx]);hud();nextT=setTimeout(next,2400)}
 function next(){idx++;if(lives<=0||idx>=deck.length){end();return}show()}
 
 /* ---------- fluxo ---------- */
 function begin(){ac();try{AC&&AC.resume()}catch(e){};clearTimeout(nextT);deck=shuffle(WORDS.slice()).slice(0,PER_GAME);idx=0;score=0;lives=LIVES;hits=0;missed=[];
   state='play';$('menu').hidden=true;$('over').hidden=true;$('note').textContent=SR?'':'Este navegador não reconhece voz. Digite a palavra.';showType(!SR);show();
-  try{const u=new SpeechSynthesisUtterance('');speechSynthesis.speak(u)}catch(e){} /* destrava a voz no iPhone */}
+  unlockAudio();}
 $('start').addEventListener('click',begin);$('again').addEventListener('click',begin);
 function end(){state='over';phase='done';if(listening){try{rec.abort()}catch(_){}}const nb=score>best;if(nb){best=score;try{localStorage.setItem('italiano-l1-best',best)}catch(e){}}
   $('oTitle').textContent=lives<=0?'Peccato! Acabaram as vidas':(nb&&score>0?'Bravissimo! Recorde!':'Bravo!');$('oScore').textContent=score;$('oHits').textContent=hits+'/'+idx;$('oBest').textContent=best;
   const ul=$('revList');ul.innerHTML='';$('review').hidden=!missed.length;
   missed.forEach(w=>{const li=document.createElement('li');const e=document.createElement('span');e.className='e';e.textContent=w.e;const t=document.createElement('span');t.textContent=full(w);
-    const b=document.createElement('button');b.type='button';b.textContent='📢';b.setAttribute('aria-label','Ouvir '+w.it);b.addEventListener('click',()=>say(w.it));li.append(e,t,b);ul.append(li)});
+    const b=document.createElement('button');b.type='button';b.textContent='📢';b.setAttribute('aria-label','Ouvir '+w.it);b.addEventListener('click',()=>{unlockAudio();say(w)});li.append(e,t,b);ul.append(li)});
   setTimeout(()=>{$('over').hidden=false},500)}
 
 /* ---------- relógio ---------- */
