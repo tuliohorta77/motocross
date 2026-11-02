@@ -196,7 +196,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
 <div class="panel" id="menu">
   <div class="sheet">
     <h1>Parla <span>Italiano!</span></h1>
-    <p class="how">Diga em italiano o que aparece. 🎤 Sozinho: <b>10 pts</b> · 📢 Ouvindo: <b>5 pts</b> · ❤️ 3 vidas</p>
+    <p class="how">Diga em italiano o que aparece. 🎤 Sozinho: <b>10 pts</b> · 📢 Ouvindo: <b>5 pts</b> · ❤️ 3 vidas<br>🎧 De vez em quando o jogo fala e você toca na figura certa.</p>
     <div class="levels">
       <button class="lv lv1" type="button" data-level="1"><span class="ex">🍎</span><span><b>Fase 1</b><span>Objetos e animais: la mela</span></span><span class="rec" id="rec1">0</span></button>
       <button class="lv lv2" type="button" data-level="2"><span class="ex nx">7</span><span><b>Fase 2</b><span>Números: sette, dodici</span></span><span class="rec" id="rec2">0</span></button>
@@ -506,9 +506,10 @@ function renderInto(w,p){p.innerHTML='';
   const n=w.n,c=n<=3?n:n===4?2:n<=6?3:n<=9?3:5,r=Math.ceil(n/c);p.style.setProperty('--c',c);p.style.setProperty('--k',(1.25/Math.max(c,r*1.15)).toFixed(3));
   for(let i=0;i<n;i++){const sp=document.createElement('span');if(w.lvl===3)sp.append(tintedCopy(w.e,w.hex));else sp.textContent=w.e;p.append(sp)}}
 function hearts(){$('hearts').textContent='❤️'.repeat(lives)+'🤍'.repeat(LIVES-lives)}
-function hud(){$('pts').innerHTML=score+'<small>pts</small>';hearts();$('count').textContent=(level===11?'Rodada ':level===2?'Número ':level===4?'Cor ':level>=8?'Frase ':'Palavra ')+Math.min(idx+1,deck.length)+' de '+deck.length}
+function hud(){$('pts').innerHTML=score+'<small>pts</small>';hearts();$('count').textContent=(level===11||(deck[idx]&&deck[idx].listen)?'Rodada ':level===2?'Número ':level===4?'Cor ':level>=8?'Frase ':'Palavra ')+Math.min(idx+1,deck.length)+' de '+deck.length}
 function show(){const w=deck[idx];phase='ask';helped=false;timeLeft=TIME;
-  if(level===11){drawOpts(w);$('ask').textContent='Ouça e toque na figura certa';$('ask').hidden=false;$('answer').hidden=true;$('ptxt').hidden=true;$('heard').textContent='';hud();setTimeout(()=>{if(phase==='ask')playIt()},300);return}
+  document.body.classList.toggle('listen',!!w.listen);
+  if(w.listen){drawOpts(w);$('ask').textContent=level===11?'Ouça e toque na figura certa':'🎧 Rodada de escuta: toque na figura certa';$('ask').hidden=false;$('answer').hidden=true;$('ptxt').hidden=true;$('heard').textContent='';hud();setTimeout(()=>{if(phase==='ask')playIt()},300);return}
   drawPic(w);$('pic').classList.remove('pop','shake');void $('pic').offsetWidth;$('pic').classList.add('pop');
   $('ask').hidden=false;$('answer').hidden=true;$('ptxt').hidden=true;$('heard').textContent='';$('badge').hidden=true;$('hear').classList.remove('used');
   $('typeIn').value='';$('mic').disabled=false;hud()}
@@ -520,7 +521,7 @@ function right(){if(phase!=='ask')return;phase='done';const pts=helped?5:10;scor
 function wrongTry(said){if(phase!=='ask')return;sWrong();$('pic').classList.remove('shake','pop');void $('pic').offsetWidth;$('pic').classList.add('shake');
   const h=$('heard');if(!h.textContent)h.textContent='Não foi dessa vez.';
   const w=deck[idx],hint=!said?'':w.lvl===8?checkV(said,w).hint:w.lvl===9?checkW(said,w).hint:w.lvl===10?checkX(said,w).hint:w.lvl==='n'?checkN(said,w).hint:w.lvl===3?check3(said,w).hint:w.lvl===2?check2(said,w).hint:'';h.insertAdjacentText('beforeend','  · '+(hint||'tente de novo'))}
-function timeout(){if(phase!=='ask')return;phase='done';if(listening||rec){killRec();listening=false;micUI()}lives--;missed.push(deck[idx]);sWrong();reveal(false);if(level===11)markOpts();
+function timeout(){if(phase!=='ask')return;phase='done';if(listening||rec){killRec();listening=false;micUI()}lives--;missed.push(deck[idx]);sWrong();reveal(false);if(deck[idx].listen)markOpts();
   $('heard').textContent='Acabou o tempo!';say(deck[idx]);hud();nextT=setTimeout(next,2400)}
 function next(){idx++;if(lives<=0||idx>=deck.length){end();return}show()}
 
@@ -565,8 +566,9 @@ function choose(b,ch){if(phase!=='ask'||state!=='play')return;phase='done';const
   markOpts();reveal(ok);hud();nextT=setTimeout(next,ok?1500:2600)}
 
 /* ---------- fluxo ---------- */
-function begin(){ac();try{AC&&AC.resume()}catch(e){};clearTimeout(nextT);TIME=[0,20,15,25,15,30,20,20,25,15,30,15][level];best=bestOf(level);$('lvlChip').textContent=level===11?'Escuta':'Fase '+level;document.body.classList.toggle('listen',level===11);
-  deck=level===11?deckL(PER_GAME):level===10?deck10(PER_GAME):level===9?deck9(PER_GAME):level===8?shuffle(VERBS.slice()):level===7?shuffle(PEOPLE.slice()).slice(0,PER_GAME):level===6?shuffle(FOOD.slice()).slice(0,PER_GAME):level===5?deck3(PER_GAME):level===4?deckC():level===3?deck2(PER_GAME):level===2?deckN():shuffle(WORDS.slice()).slice(0,PER_GAME);idx=0;score=0;lives=LIVES;hits=0;missed=[];
+function begin(){ac();try{AC&&AC.resume()}catch(e){};clearTimeout(nextT);TIME=[0,20,15,25,15,30,20,20,25,15,30,15][level];best=bestOf(level);$('lvlChip').textContent=level===11?'Escuta':'Fase '+level;
+  deck=level===11?deckL(PER_GAME).map(w=>({...w,listen:true})):level===10?deck10(PER_GAME):level===9?deck9(PER_GAME):level===8?shuffle(VERBS.slice()):level===7?shuffle(PEOPLE.slice()).slice(0,PER_GAME):level===6?shuffle(FOOD.slice()).slice(0,PER_GAME):level===5?deck3(PER_GAME):level===4?deckC():level===3?deck2(PER_GAME):level===2?deckN():shuffle(WORDS.slice()).slice(0,PER_GAME);idx=0;score=0;lives=LIVES;hits=0;missed=[];
+  if(level<=10){let run=0;deck=deck.map((w,i)=>{const L=i>0&&run<2&&Math.random()<.33;run=L?run+1:0;return L?{...w,listen:true,choices:shuffle([w,...variants(w)])}:w})}
   state='play';$('menu').hidden=true;$('over').hidden=true;$('note').textContent=SR?'':'Este navegador não reconhece voz. Digite a palavra.';showType(!SR);show();
   unlockAudio();}
 document.querySelectorAll('.lv').forEach(b=>b.addEventListener('click',()=>{level=+b.dataset.level;begin()}));$('again').addEventListener('click',begin);
