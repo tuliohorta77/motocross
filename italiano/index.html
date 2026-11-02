@@ -125,6 +125,9 @@ form.type button{font-family:var(--display);font-weight:700;font-size:18px;borde
 .box.back{height:46%;background:#a8703f}.box.front{height:36%;background:linear-gradient(#d39a5c,#c0844a);box-shadow:inset 0 3px 0 #e6b47a}
 .box.front::after{content:'';position:absolute;left:44%;width:12%;top:0;bottom:0;background:rgba(255,255,255,.18)}
 .lv .rec{font-size:18px}.lv .rec::before{content:'🏆 ';font-size:13px}
+.auto{display:flex;align-items:center;justify-content:center;gap:8px;font-weight:800;font-size:15px;color:var(--ink);cursor:pointer}
+.auto input{width:20px;height:20px;accent-color:var(--verde)}
+.auto small{font-weight:700;color:var(--muted);font-size:12px}
 .how{margin:0;font-size:15px;font-weight:700;line-height:1.35;color:var(--muted)}
 .numeral{font-family:var(--display);font-weight:700;font-size:calc(var(--base,min(34vmin,170px))*.88);line-height:1;color:var(--terra);text-shadow:0 6px 0 #ecd2b8}
 .blob{width:calc(var(--base,min(34vmin,170px))*1.05);height:calc(var(--base,min(34vmin,170px))*.85);border-radius:58% 42% 55% 45% / 52% 60% 40% 48%;border:3px solid rgba(43,33,24,.18);box-shadow:inset -12px -14px 0 rgba(0,0,0,.12),inset 10px 10px 0 rgba(255,255,255,.25),0 8px 14px rgba(80,50,20,.18)}
@@ -207,6 +210,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
   <div class="sheet">
     <h1>Parla <span>Italiano!</span></h1>
     <p class="how">Diga em italiano o que aparece. 🎤 Sozinho: <b>10 pts</b> · 📢 Ouvindo: <b>5 pts</b> · ❤️ 3 vidas<br>🎧 De vez em quando o jogo fala e você toca na figura certa.</p>
+    <label class="auto"><input type="checkbox" id="autoMic" checked> 🎤 Microfone sempre ligado <small>(liga sozinho a cada figura)</small></label>
     <div class="levels">
       <button class="lv lv1" type="button" data-level="1"><span class="ex">🍎</span><span><b>Fase 1</b><span>Objetos e animais: la mela</span></span><span class="rec" id="rec1">0</span></button>
       <button class="lv lv2" type="button" data-level="2"><span class="ex nx">7</span><span><b>Fase 2</b><span>Números até 100: quarantasette</span></span><span class="rec" id="rec2">0</span></button>
@@ -435,12 +439,14 @@ function pickVoice(){try{const vs=speechSynthesis.getVoices();itVoice=vs.find(v=
 if('speechSynthesis' in window){pickVoice();try{speechSynthesis.onvoiceschanged=pickVoice}catch(e){}}
 function synth(text){try{const ss=speechSynthesis;const go=()=>{try{ss.resume()}catch(_){}const u=new SpeechSynthesisUtterance(text);u.lang='it-IT';if(itVoice)u.voice=itVoice;u.rate=.85;ss.speak(u)};
   if(ss.speaking||ss.pending){ss.cancel();setTimeout(go,150)}else go()}catch(e){}}
-function say(w){ // w = palavra do jogo
-  const text=full(w);let started=false;
+function say(w,onDone){ // w = palavra do jogo; onDone roda quando o áudio termina
+  if(listening||rec){killRec();listening=false;micUI()}playSession();
+  const text=full(w);let started=false,done=false;const fin=()=>{if(done)return;done=true;if(onDone)setTimeout(onDone,250)};
+  player.onended=fin;setTimeout(fin,6000);
   try{player.pause();player.src='audio/'+(w.audio||slug(w.it))+'.mp3?v=2';player.currentTime=0;
     player.onplaying=()=>{started=true};
-    const p=player.play();if(p&&p.catch)p.catch(()=>{if(!started){started=true;synth(text)}})}catch(e){synth(text)}
-  player.onerror=()=>{if(!started){started=true;synth(text)}};
+    const p=player.play();if(p&&p.catch)p.catch(()=>{if(!started){started=true;synth(text);setTimeout(fin,1800)}})}catch(e){synth(text);setTimeout(fin,1800)}
+  player.onerror=()=>{if(!started){started=true;synth(text);setTimeout(fin,1800)}};
   setTimeout(()=>{if(!started&&player.paused){synth(text);$('note').textContent='Sem som? Aumente o volume do iPhone.'}},1500);
 }
 
@@ -456,7 +462,7 @@ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;let rec=null,h
 let recStop=null;
 let restarts=0,gotSomething=false,watchdog=null,retried=false,judgeT=null,accum='',curText='',listenUntil=0,userStop=false,fatal=false;
 // Escuta "longa": junta tudo o que foi dito, religa se o iPhone parar no meio e só julga depois de uma pausa.
-function setupRec(cont=true){if(!SR)return null;const r=new SR();r.lang='it-IT';r.interimResults=true;r.maxAlternatives=5;r.continuous=cont;
+function setupRec(cont=true){if(!SR)return null;const r=new SR();r._t=Date.now();r.lang='it-IT';r.interimResults=true;r.maxAlternatives=5;r.continuous=cont;
   r.onaudiostart=()=>{gotSomething=true};r.onspeechstart=()=>{gotSomething=true};
   r.onresult=e=>{if(r!==rec)return;gotSomething=true;if(phase!=='ask')return;clearTimeout(judgeT);
     const parts=[];for(let i=0;i<e.results.length;i++)parts.push(e.results[i][0].transcript);curText=parts.join(' ');
@@ -471,26 +477,35 @@ function setupRec(cont=true){if(!SR)return null;const r=new SR();r.lang='it-IT';
       'service-not-allowed':'O reconhecimento de voz está desligado. Ative o Ditado em Ajustes › Geral › Teclado, ou use Digitar.',
       'audio-capture':'O microfone está ocupado por outro app. Feche-o e tente de novo.',
       'network':'O reconhecimento de voz precisa de internet. Confira a conexão.'}[e.error];
+    if(lastAuto&&e.error==='not-allowed'){fatal=false;autoBlocked=true;$('note').textContent='Toque no 🎤 para falar (o iPhone pediu um toque para ligar o microfone).';return}
     if(m)$('note').textContent=m;if(e.error==='not-allowed'||e.error==='service-not-allowed')showType(true)};
   r.onend=()=>{if(r!==rec)return;clearTimeout(watchdog);
     // o iPhone parou sozinho mas ainda há tempo: guarda o que ouviu e religa
-    if(listening&&phase==='ask'&&!userStop&&!fatal&&Date.now()<listenUntil&&restarts<8){restarts++;accum=(accum+' '+curText).trim();curText='';
+    if(listening&&phase==='ask'&&!userStop&&!fatal&&Date.now()<listenUntil&&restarts<8&&(curText||Date.now()-(r._t||0)>1200)){restarts++;accum=(accum+' '+curText).trim();curText='';
       rec=setupRec(r.continuous);try{rec.start();return}catch(_){}}
     endListen()};
   return r}
-function endListen(){const said=(accum+' '+curText).trim();listening=false;clearTimeout(recStop);clearTimeout(watchdog);micUI();
+function endListen(){const said=(accum+' '+curText).trim();listening=false;playSession();clearTimeout(recStop);clearTimeout(watchdog);micUI();
   if(phase==='ask'){clearTimeout(judgeT);if(said&&!isRight(said,deck[idx])){if(heardFinal!==said){heardShow(said);hintFor(said);sWrong()}}
-    else if(!said&&!fatal)$('heard').textContent='Não ouvi nada. Toque no microfone e fale de novo.'}
-  heardFinal='';accum='';curText=''}
-function finishListen(){userStop=true;clearTimeout(judgeT);clearTimeout(recStop);clearTimeout(watchdog);listening=false;micUI();const r=rec;rec=null;try{r&&r.abort()}catch(_){}accum='';curText=''}
+    else if(!said&&!fatal&&!(AUTO&&!autoBlocked))$('heard').textContent='Não ouvi nada. Toque no microfone e fale de novo.'}
+  heardFinal='';accum='';curText='';
+  const quick=Date.now()-recStartedAt<1500&&!said;   // escuta voltou vazia muito rápido: espera um pouco antes de religar
+  if(AUTO&&!autoBlocked&&!userStop&&!fatal&&phase==='ask')setTimeout(autoListen,quick?1600:400)}
+function finishListen(){playSession();userStop=true;clearTimeout(judgeT);clearTimeout(recStop);clearTimeout(watchdog);listening=false;micUI();const r=rec;rec=null;try{r&&r.abort()}catch(_){}accum='';curText=''}
+function capStop(){clearTimeout(watchdog);try{rec&&rec.stop()}catch(_){endListen()}}   // tempo máximo de uma escuta (não conta como "parar")
 function stopRec(){userStop=true;clearTimeout(recStop);clearTimeout(watchdog);try{rec&&rec.stop()}catch(_){endListen()}}
-function killRec(){clearTimeout(recStop);clearTimeout(watchdog);clearTimeout(judgeT);if(!rec)return;const r=rec;rec=null;try{r.onresult=r.onend=r.onerror=null;r.abort()}catch(_){}}
+function killRec(){playSession();clearTimeout(recStop);clearTimeout(watchdog);clearTimeout(judgeT);if(!rec)return;const r=rec;rec=null;try{r.onresult=r.onend=r.onerror=null;r.abort()}catch(_){}}
 const IOS=/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+let AUTO=true,autoBlocked=false,lastAuto=false;
+try{AUTO=localStorage.getItem('italiano-automic')!=='0'}catch(e){}
+function autoListen(){if(!AUTO||autoBlocked||!SR||state!=='play'||phase!=='ask'||!deck[idx]||deck[idx].listen||listening)return;retried=false;startRec(true,true)}
+function playSession(){try{if(navigator.audioSession)navigator.audioSession.type='playback'}catch(e){}}   // som pelo alto-falante principal
 function micSession(){try{if(navigator.audioSession)navigator.audioSession.type='play-and-record'}catch(e){}}   // microfone com sensibilidade total
-function startRec(cont){if(IOS)cont=false;micSession();try{player.pause()}catch(e){}killRec();restarts=0;rec=setupRec(cont);heardFinal='';accum='';curText='';gotSomething=false;userStop=false;fatal=false;
+let recStartedAt=0;
+function startRec(cont,auto=false){lastAuto=auto;recStartedAt=Date.now();if(IOS)cont=false;try{player.pause()}catch(e){}killRec();micSession();restarts=0;rec=setupRec(cont);heardFinal='';accum='';curText='';gotSomething=false;userStop=false;fatal=false;
   try{rec.start()}catch(e){$('note').textContent='Não consegui ligar o microfone. Toque de novo.';return}
   const secs=deck[idx]&&[3,8,10,13].includes(deck[idx].lvl)?16:12;listenUntil=Date.now()+secs*1000;
-  listening=true;micUI();$('note').textContent='';recStop=setTimeout(stopRec,secs*1000);
+  listening=true;micUI();$('note').textContent='';recStop=setTimeout(capStop,secs*1000);
   watchdog=setTimeout(()=>{if(listening&&!gotSomething&&!retried){retried=true;startRec(false)}},3500)}
 function hintFor(said){const w=deck[idx],h=w.lvl===13?checkQ(said,w).hint:w.lvl===12?checkA(said,w).hint:w.lvl==='n'&&false?'':w.lvl===8?checkV(said,w).hint:w.lvl===9?checkW(said,w).hint:w.lvl===10?checkX(said,w).hint:w.lvl==='n'?checkN(said,w).hint:w.lvl===3?check3(said,w).hint:w.lvl===2?check2(said,w).hint:'';$('heard').insertAdjacentText('beforeend','  · '+(h||'tente de novo'))}
 function micUI(){$('mic').classList.toggle('on',listening);$('micTxt').textContent=listening?'Parar':'Falar';
@@ -501,7 +516,7 @@ $('mic').addEventListener('click',()=>{ac();if(state!=='play'||phase!=='ask')ret
   if(!SR){showType(true);return}
   if(listening){stopRec();return}
   try{player.pause();speechSynthesis.cancel()}catch(e){}
-  retried=false;startRec(true)});
+  retried=false;autoBlocked=false;startRec(true)});
 
 /* ---------- digitar ---------- */
 function showType(on){$('typeForm').hidden=!on;$('kbSub').textContent=on?'aberto':'se preferir';if(on)setTimeout(()=>$('typeIn').focus(),50)}
@@ -511,7 +526,7 @@ $('typeForm').addEventListener('submit',e=>{e.preventDefault();if(phase!=='ask')
 
 /* ---------- megafone ---------- */
 $('hear').addEventListener('click',()=>{if(state!=='play'||phase!=='ask')return;if(listening||rec){killRec();listening=false;micUI()}
-  unlockAudio();helped=true;$('hear').classList.add('used');$('badge').hidden=false;say(deck[idx]);if(deck[idx].lvl===13)$('heard').textContent='Exemplo: '+deck[idx].it});
+  unlockAudio();helped=true;$('hear').classList.add('used');$('badge').hidden=false;say(deck[idx],autoListen);if(deck[idx].lvl===13)$('heard').textContent='Exemplo: '+deck[idx].it});
 
 /* ---------- rodada ---------- */
 const TC={};
@@ -558,7 +573,8 @@ function show(){const w=deck[idx];phase='ask';helped=false;timeLeft=TIME;
   document.body.classList.toggle('listen',!!w.listen);if(w.listen)document.body.classList.remove('convo');
   if(w.listen){drawOpts(w);$('ask').textContent=level===99?'Ouça e toque na figura certa':'🎧 Rodada de escuta: toque na figura certa';$('ask').hidden=false;$('answer').hidden=true;$('ptxt').hidden=true;$('heard').textContent='';hud();setTimeout(()=>{if(phase==='ask')playIt()},300);return}
   document.body.classList.toggle('convo',w.lvl===13);$('replay').textContent=w.lvl===13?'🔁 Repetir pergunta':'🔊 Ouvir de novo';
-  if(w.lvl===13)setTimeout(()=>{if(phase==='ask'&&deck[idx]===w)say({...w,audio:w.qaudio,it:w.q})},350);
+  if(w.lvl===13)setTimeout(()=>{if(phase==='ask'&&deck[idx]===w)say({...w,audio:w.qaudio,it:w.q},autoListen)},350);
+  else setTimeout(()=>{if(deck[idx]===w)autoListen()},450);
   drawPic(w);$('pic').classList.remove('pop','shake');void $('pic').offsetWidth;$('pic').classList.add('pop');
   $('ask').hidden=false;$('answer').hidden=true;$('ptxt').hidden=true;$('heard').textContent='';$('badge').hidden=true;$('hear').classList.remove('used');
   $('typeIn').value='';$('mic').disabled=false;hud()}
@@ -612,7 +628,7 @@ function drawOpts(w){const box=$('opts');box.innerHTML='';
     b.addEventListener('click',()=>choose(b,ch));box.append(b)})}
 function markOpts(){[...$('opts').children].forEach((b,i)=>{const ch=deck[idx].choices[i];if(ch.it===deck[idx].it)b.classList.add('ok');else if(!b.classList.contains('bad'))b.classList.add('dim')})}
 function playIt(){const r=$('replay');r.classList.add('playing');say(deck[idx]);setTimeout(()=>r.classList.remove('playing'),1400)}
-$('replay').addEventListener('click',()=>{if(state!=='play')return;const w=deck[idx];if(w.lvl===13&&!w.listen)say({...w,audio:w.qaudio,it:w.q});else playIt()});
+$('replay').addEventListener('click',()=>{if(state!=='play')return;const w=deck[idx];if(w.lvl===13&&!w.listen)say({...w,audio:w.qaudio,it:w.q},autoListen);else playIt()});
 function choose(b,ch){if(phase!=='ask'||state!=='play')return;phase='done';const ok=ch.it===deck[idx].it;
   if(ok){score+=10;hits++;sRight();$('heard').textContent='Perfetto! +10'}else{b.classList.add('bad');lives--;missed.push(deck[idx]);sWrong();$('heard').textContent='Era esta:'}
   markOpts();reveal(ok);hud();nextT=setTimeout(next,ok?1500:2600)}
@@ -621,8 +637,8 @@ function choose(b,ch){if(phase!=='ask'||state!=='play')return;phase='done';const
 function begin(){ac();try{AC&&AC.resume()}catch(e){};clearTimeout(nextT);TIME=({1:20,2:15,3:25,4:15,5:30,6:20,7:20,8:25,9:15,10:30,11:20,12:20,13:35,99:15})[level];best=bestOf(level);$('lvlChip').textContent=level===99?'Escuta':'Fase '+level;
   deck=level===13?shuffle(CONVO.slice()):level===12?shuffle(ADJS.slice()).slice(0,PER_GAME):level===11?shuffle(GREET.slice()).slice(0,PER_GAME):level===99?deckL(PER_GAME).map(w=>({...w,listen:true})):level===10?deck10(PER_GAME):level===9?deck9(PER_GAME):level===8?shuffle(VERBS.slice()):level===7?shuffle(PEOPLE.slice()).slice(0,PER_GAME):level===6?shuffle(FOOD.slice()).slice(0,PER_GAME):level===5?deck3(PER_GAME):level===4?deckC():level===3?deck2(PER_GAME):level===2?deckN():shuffle(WORDS.slice()).slice(0,PER_GAME);idx=0;score=0;lives=LIVES;hits=0;missed=[];
   if(level<=12){let run=0;deck=deck.map((w,i)=>{const L=i>0&&run<2&&Math.random()<.33;run=L?run+1:0;return L?{...w,listen:true,choices:shuffle([w,...variants(w)])}:w})}
-  state='play';$('menu').hidden=true;$('over').hidden=true;$('note').textContent=SR?'':'Este navegador não reconhece voz. Digite a palavra.';showType(!SR);show();
-  unlockAudio();}
+  state='play';$('menu').hidden=true;$('over').hidden=true;$('note').textContent=SR?'':'Este navegador não reconhece voz. Digite a palavra.';showType(!SR);unlockAudio();autoBlocked=false;show();
+  if(deck[0]&&deck[0].lvl!==13)autoListen();}   // 1ª figura: liga o microfone ainda dentro do toque
 document.querySelectorAll('.lv').forEach(b=>b.addEventListener('click',()=>{level=+b.dataset.level;begin()}));$('again').addEventListener('click',begin);
 $('toMenu').addEventListener('click',()=>{$('over').hidden=true;$('menu').hidden=false;state='menu';showRecs()});
 function bestOf(l){try{return +localStorage.getItem('italiano-f'+l+'-best')||0}catch(e){return 0}}
@@ -631,6 +647,7 @@ try{if(!localStorage.getItem('italiano-migr')){const a=localStorage.getItem('ita
   if(a)localStorage.setItem('italiano-f1-best',a);if(b)localStorage.setItem('italiano-f3-best',b);localStorage.setItem('italiano-migr','1')}}catch(e){}
 function showRecs(){[1,2,3,4,5,6,7,8,9,10,11,12,13,99].forEach(l=>$('rec'+l).textContent=bestOf(l))}
 showRecs();
+$('autoMic').checked=AUTO;$('autoMic').addEventListener('change',e=>{AUTO=e.target.checked;try{localStorage.setItem('italiano-automic',AUTO?'1':'0')}catch(_){}});
 function end(){state='over';phase='done';if(listening||rec){killRec();listening=false;micUI()}const nb=score>best;if(nb){best=score;try{localStorage.setItem('italiano-f'+level+'-best',best)}catch(e){}}
   $('oTitle').textContent=lives<=0?'Peccato! Acabaram as vidas':(nb&&score>0?'Bravissimo! Recorde!':'Bravo!');$('oScore').textContent=score;$('oHits').textContent=hits+'/'+idx;$('oBest').textContent=best;
   const ul=$('revList');ul.innerHTML='';$('review').hidden=!missed.length;
@@ -645,7 +662,7 @@ function tick(now){const dt=Math.min(.1,(now-(last||now))/1000);last=now;
   requestAnimationFrame(tick)}
 requestAnimationFrame(tick);
 hud();
-window.__ita={type:v=>{$('typeIn').value=v;$('typeForm').requestSubmit()},st:()=>({state,phase,idx,score,lives,hits,word:deck[idx]&&deck[idx].it,w:deck[idx]}),matches,check2,check3,checkN,checkC,checkA,checkQ,GREET,ADJS,CONVO,NUMS,deckL,variants,checkV,checkW,checkX,scene,FOOD,PEOPLE,VERBS,tintedCopy,WORDS,NOUNS2,NOUNS3,COLORS};
+window.__ita={deck:()=>deck,type:v=>{$('typeIn').value=v;$('typeForm').requestSubmit()},st:()=>({state,phase,idx,score,lives,hits,word:deck[idx]&&deck[idx].it,w:deck[idx]}),matches,check2,check3,checkN,checkC,checkA,checkQ,GREET,ADJS,CONVO,NUMS,deckL,variants,checkV,checkW,checkX,scene,FOOD,PEOPLE,VERBS,tintedCopy,WORDS,NOUNS2,NOUNS3,COLORS};
 if('serviceWorker' in navigator){addEventListener('load',()=>{navigator.serviceWorker.register('../sw.js',{scope:'../'}).catch(()=>{})})}
 })();
 </script>
