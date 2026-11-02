@@ -217,7 +217,7 @@ const WORDS=[
  ['🐴','il','cavallo','cavalo'],['🐦',"l'",'uccello','pássaro',['uccellino']],['🐭','il','topo','rato',['topolino']],['🐷','il','maiale','porco',['maialino']],['🐑','la','pecora','ovelha'],
  ['🦋','la','farfalla','borboleta'],['🛏️','il','letto','cama'],['🪑','la','sedia','cadeira'],['🚪','la','porta','porta'],['👶','il','bambino','bebê',['neonato','bimbo']],
  ['🍝','la','pasta','macarrão',['spaghetti']],['☕','il','caffè','café'],['🌹','la','rosa','rosa'],['🐘',"l'",'elefante','elefante'],['🍷','il','vino','vinho']
-].map(([e,art,it,pt,alt])=>({e,art,it,pt,alt:alt||[]}));
+].map(([e,art,it,pt,alt])=>({lvl:1,e,art,it,pt,alt:alt||[]}));
 /* ---------- nível 2: números + plural ---------- */
 const NOUNS2=[["🍎", "mela", "mele", "maçãs"], ["🐶", "cane", "cani", "cachorros"], ["🐱", "gatto", "gatti", "gatos"], ["🏠", "casa", "case", "casas"], ["📖", "libro", "libri", "livros"], ["🚗", "macchina", "macchine", "carros"], ["🚆", "treno", "treni", "trens"], ["🚲", "bicicletta", "biciclette", "bicicletas"], ["❤️", "cuore", "cuori", "corações"], ["⭐", "stella", "stelle", "estrelas"], ["🔑", "chiave", "chiavi", "chaves"], ["🎩", "cappello", "cappelli", "chapéus"], ["🍌", "banana", "banane", "bananas"], ["🍓", "fragola", "fragole", "morangos"], ["🍋", "limone", "limoni", "limões"], ["🍊", "arancia", "arance", "laranjas"], ["🍅", "pomodoro", "pomodori", "tomates"], ["🥕", "carota", "carote", "cenouras"], ["🐄", "mucca", "mucche", "vacas"], ["🐴", "cavallo", "cavalli", "cavalos"], ["🐦", "uccello", "uccelli", "pássaros"], ["🐭", "topo", "topi", "ratos"], ["🐷", "maiale", "maiali", "porcos"], ["🐑", "pecora", "pecore", "ovelhas"], ["🦋", "farfalla", "farfalle", "borboletas"], ["🛏️", "letto", "letti", "camas"], ["🪑", "sedia", "sedie", "cadeiras"], ["🥚", "uovo", "uova", "ovos"], ["🐟", "pesce", "pesci", "peixes"], ["🍦", "gelato", "gelati", "sorvetes"], ["🍕", "pizza", "pizze", "pizzas"], ["🌸", "fiore", "fiori", "flores"], ["🌳", "albero", "alberi", "árvores"], ["🐘", "elefante", "elefanti", "elefantes"], ["🌹", "rosa", "rose", "rosas"], ["✈️", "aereo", "aerei", "aviões"]].map(([e,sg,pl,pt])=>({e,sg,pl,pt}));
 const NUM={"2": "due", "3": "tre", "4": "quattro", "5": "cinque", "6": "sei", "7": "sette", "8": "otto", "9": "nove", "10": "dieci"};
@@ -357,7 +357,7 @@ const slug=w=>w.normalize('NFD').replace(/[\u0300-\u036f]/g,'');
 const SILENT='data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjYwLjE2LjEwMAAAAAAAAAAAAAAA//NwwAAAAAAAAAAAAEluZm8AAAAPAAAABgAAAykAWlpaWlpaWlpaWlpaWlpaWnt7e3t7e3t7e3t7e3t7e3t7nJycnJycnJycnJycnJycnL29vb29vb29vb29vb29vb293t7e3t7e3t7e3t7e3t7e3t7/////////////////////AAAAAExhdmM2MC4zMQAAAAAAAAAAAAAAACQCowAAAAAAAAMpso+sIAAAAAAAAAAAAAAAAAD/80DEAAAAA0gAAAAATEFNRTMuMTAwVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQsRbAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQMSkAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NCxKMAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NAxKQAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/80LEowAAA0gAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVU=';
 let unlocked=false;
 function unlockAudio(){ // chamado dentro de um toque: libera tocar áudio depois, sem toque
-  try{if(navigator.audioSession)navigator.audioSession.type='playback'}catch(e){}
+  try{if(navigator.audioSession&&!listening)navigator.audioSession.type='playback'}catch(e){}
   if(unlocked)return;unlocked=true;try{player.src=SILENT;const p=player.play();if(p&&p.catch)p.catch(()=>{unlocked=false})}catch(e){unlocked=false}}
 let itVoice=null;
 function pickVoice(){try{const vs=speechSynthesis.getVoices();itVoice=vs.find(v=>/^it(-|_|$)/i.test(v.lang)&&/alice|federica|luca|paola/i.test(v.name))||vs.find(v=>/^it/i.test(v.lang))||null}catch(e){}}
@@ -414,7 +414,9 @@ function endListen(){const said=(accum+' '+curText).trim();listening=false;clear
 function finishListen(){userStop=true;clearTimeout(judgeT);clearTimeout(recStop);clearTimeout(watchdog);listening=false;micUI();const r=rec;rec=null;try{r&&r.abort()}catch(_){}accum='';curText=''}
 function stopRec(){userStop=true;clearTimeout(recStop);clearTimeout(watchdog);try{rec&&rec.stop()}catch(_){endListen()}}
 function killRec(){clearTimeout(recStop);clearTimeout(watchdog);clearTimeout(judgeT);if(!rec)return;const r=rec;rec=null;try{r.onresult=r.onend=r.onerror=null;r.abort()}catch(_){}}
-function startRec(cont){killRec();restarts=0;rec=setupRec(cont);heardFinal='';accum='';curText='';gotSomething=false;userStop=false;fatal=false;
+const IOS=/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+function micSession(){try{if(navigator.audioSession)navigator.audioSession.type='play-and-record'}catch(e){}}   // microfone com sensibilidade total
+function startRec(cont){if(IOS)cont=false;micSession();try{player.pause()}catch(e){}killRec();restarts=0;rec=setupRec(cont);heardFinal='';accum='';curText='';gotSomething=false;userStop=false;fatal=false;
   try{rec.start()}catch(e){$('note').textContent='Não consegui ligar o microfone. Toque de novo.';return}
   const secs=deck[idx]&&[3,8,10].includes(deck[idx].lvl)?16:12;listenUntil=Date.now()+secs*1000;
   listening=true;micUI();$('note').textContent='';recStop=setTimeout(stopRec,secs*1000);
@@ -423,7 +425,7 @@ function hintFor(said){const w=deck[idx],h=w.lvl===8?checkV(said,w).hint:w.lvl==
 function micUI(){$('mic').classList.toggle('on',listening);$('micTxt').textContent=listening?'Parar':'Falar';
   if(listening&&phase==='ask'){$('heard').textContent='🎙️ Ouvindo… fale agora'}}
 function heardShow(t){$('heard').innerHTML='Ouvi: <b></b>';$('heard').querySelector('b').textContent='“'+t.trim()+'”'}
-$('mic').addEventListener('click',()=>{ac();unlockAudio();if(state!=='play'||phase!=='ask')return;
+$('mic').addEventListener('click',()=>{ac();if(state!=='play'||phase!=='ask')return;
   if(!SR){showType(true);return}
   if(listening){stopRec();return}
   try{player.pause();speechSynthesis.cancel()}catch(e){}
@@ -470,7 +472,7 @@ function drawPic(w){const p=$('pic');p.innerHTML='';const cap=$('cap');cap.hidde
   if(w.lvl==='n'){p.classList.remove('multi','single');const d=document.createElement('div');d.className='numeral';d.textContent=w.n;p.append(d);return}
   if(w.lvl==='c'){p.classList.remove('multi','single');const d=document.createElement('div');d.className='blob';d.style.background=w.hex;p.append(d);return}p.classList.toggle('multi',w.lvl>=2&&w.n>1);p.classList.toggle('single',w.lvl===3&&w.n===1);
   if(w.lvl===3&&w.n===1){p.append(tintedCopy(w.e,w.hex));return}
-  if(w.lvl===1){p.classList.remove('multi','single');p.textContent=w.e;return}
+  if(!w.lvl||w.lvl===1){p.classList.remove('multi','single');p.textContent=w.e;return}
   const n=w.n,c=n<=3?n:n===4?2:n<=6?3:n<=9?3:5,r=Math.ceil(n/c);p.style.setProperty('--c',c);p.style.setProperty('--k',(1.25/Math.max(c,r*1.15)).toFixed(3));
   for(let i=0;i<n;i++){const sp=document.createElement('span');if(w.lvl===3)sp.append(tintedCopy(w.e,w.hex));else sp.textContent=w.e;p.append(sp)}}
 function hearts(){$('hearts').textContent='❤️'.repeat(lives)+'🤍'.repeat(LIVES-lives)}
