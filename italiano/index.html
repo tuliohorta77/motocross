@@ -98,7 +98,22 @@ form.type button{font-family:var(--display);font-weight:700;font-size:18px;borde
 .lv .rec{font-family:var(--display);font-weight:600;font-size:13px;text-align:right;line-height:1.1;opacity:.95}
 .lv1{background:var(--verde);box-shadow:0 4px 0 #075c31}.lv2{background:#c8643a;box-shadow:0 4px 0 #8a3f1f}.lv3{background:var(--rosso);box-shadow:0 4px 0 #8f1d26}
 .lv4{background:#2d5bd6;box-shadow:0 4px 0 #1b3c94}.lv5{background:#7b3fbf;box-shadow:0 4px 0 #4f2385}
-.levels{gap:9px}.lv{padding:9px 14px}.lv b{font-size:19px}.lv .ex{font-size:26px;width:34px;text-align:center}.lv .nx{font-family:var(--display);font-weight:700}
+.levels{display:grid;grid-template-columns:1fr 1fr;gap:8px}.lv{padding:9px 10px;grid-template-columns:auto 1fr;gap:4px 8px;position:relative}
+.lv b{font-size:17px}.lv>span:nth-child(2)>span{font-size:12px;line-height:1.15;display:block}.lv .ex{font-size:24px;width:30px;text-align:center}.lv .nx{font-family:var(--display);font-weight:700}
+.lv .rec{position:absolute;top:6px;right:8px;font-size:12px}
+.lv6{background:#d9822b;box-shadow:0 4px 0 #94551a}.lv7{background:#0e8f8f;box-shadow:0 4px 0 #075f5f}.lv8{background:#b8325f;box-shadow:0 4px 0 #7c1f3e}
+.lv9{background:#4a7f2a;box-shadow:0 4px 0 #2e5419}.lv10{background:#3d3d8f;box-shadow:0 4px 0 #26265e}
+.pic .duo{white-space:nowrap;font-size:.72em;letter-spacing:-.05em}
+.cap{margin:0;font-family:var(--display);font-weight:600;font-size:19px;color:var(--terra)}
+.scene{position:relative;width:min(72vmin,300px);height:calc(min(72vmin,300px)*.66);--u:min(72vmin,300px)}
+.scene .gnd{position:absolute;left:4%;right:4%;bottom:3%;height:3px;border-radius:2px;background:#d9c3a0}
+.scene .it{position:absolute;transform:translate(-50%,-100%);line-height:1;font-size:calc(var(--u)*.2);filter:drop-shadow(0 4px 4px rgba(80,50,20,.2))}
+.scene .tree{font-size:calc(var(--u)*.42)}
+.tbl{position:absolute;left:20%;right:20%;top:44%;height:6%;background:#9a5b2c;border-radius:4px;box-shadow:inset 0 -3px 0 #7a4420}
+.leg{position:absolute;top:49%;bottom:3%;width:5%;background:#7a4420;border-radius:2px}
+.box{position:absolute;left:31%;width:38%;bottom:3%;border-radius:3px}
+.box.back{height:46%;background:#a8703f}.box.front{height:36%;background:linear-gradient(#d39a5c,#c0844a);box-shadow:inset 0 3px 0 #e6b47a}
+.box.front::after{content:'';position:absolute;left:44%;width:12%;top:0;bottom:0;background:rgba(255,255,255,.18)}
 .lv .rec{font-size:18px}.lv .rec::before{content:'🏆 ';font-size:13px}
 .how{margin:0;font-size:15px;font-weight:700;line-height:1.35;color:var(--muted)}
 .numeral{font-family:var(--display);font-weight:700;font-size:min(30vmin,150px);line-height:1;color:var(--terra);text-shadow:0 6px 0 #ecd2b8}
@@ -132,6 +147,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
     <span class="badge" id="badge" hidden>vale 5</span>
     <p class="ask" id="ask">Como se diz em italiano?</p>
     <div class="pic" id="pic" aria-live="polite">🍎</div>
+    <p class="cap" id="cap" hidden></p>
     <p class="answer" id="answer" hidden></p>
     <p class="pt" id="ptxt" hidden></p>
     <p class="heard" id="heard"></p>
@@ -160,6 +176,11 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
       <button class="lv lv3" type="button" data-level="3"><span class="ex">🛏️</span><span><b>Fase 3</b><span>Número + objeto: tre letti</span></span><span class="rec" id="rec3">0</span></button>
       <button class="lv lv4" type="button" data-level="4"><span class="ex">🎨</span><span><b>Fase 4</b><span>Cores: rosso, giallo</span></span><span class="rec" id="rec4">0</span></button>
       <button class="lv lv5" type="button" data-level="5"><span class="ex">🚙</span><span><b>Fase 5</b><span>Tudo junto: tre macchine blu</span></span><span class="rec" id="rec5">0</span></button>
+      <button class="lv lv6" type="button" data-level="6"><span class="ex">🍝</span><span><b>Fase 6</b><span>Comidas e bebidas: il caffè</span></span><span class="rec" id="rec6">0</span></button>
+      <button class="lv lv7" type="button" data-level="7"><span class="ex">👵</span><span><b>Fase 7</b><span>Família e pessoas: la nonna</span></span><span class="rec" id="rec7">0</span></button>
+      <button class="lv lv8" type="button" data-level="8"><span class="ex">🏃</span><span><b>Fase 8</b><span>Verbos: il cane mangia</span></span><span class="rec" id="rec8">0</span></button>
+      <button class="lv lv9" type="button" data-level="9"><span class="ex">📦</span><span><b>Fase 9</b><span>Onde está: sopra, sotto</span></span><span class="rec" id="rec9">0</span></button>
+      <button class="lv lv10" type="button" data-level="10"><span class="ex">🐱</span><span><b>Fase 10</b><span>Il gatto è fuori dalla scatola</span></span><span class="rec" id="rec10">0</span></button>
     </div>
     <a class="alt" href="../">◀ Voltar aos jogos</a>
   </div>
@@ -252,6 +273,38 @@ function check3(heard,w){ // devolve {ok, hint}
   if(nounOk&&!colorOk)return{ok:false,hint:'Diga também a cor.'};
   if(colorOk&&!nounOk)return{ok:false,hint:'A cor está certa. E o objeto?'};
   return{ok:false}}
+/* ---------- fases 6 a 10 ---------- */
+const sl=t=>t.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ /g,'-').replace(/'/g,'');
+const FOOD=[["☕", "il", "caffè", "café", []], ["🍵", "il", "tè", "chá", ["te", "the"]], ["🍺", "la", "birra", "cerveja", []], ["🍷", "il", "vino", "vinho", []], ["🧃", "il", "succo", "suco", ["succo di frutta"]], ["🥤", "la", "bibita", "refrigerante", ["bevanda", "coca cola", "bibite"]], ["🍕", "la", "pizza", "pizza", []], ["🍝", "la", "pasta", "macarrão", ["spaghetti"]], ["🎂", "la", "torta", "bolo", []], ["🍪", "il", "biscotto", "biscoito", ["biscotti"]], ["🍫", "il", "cioccolato", "chocolate", ["cioccolata"]], ["🥗", "l'", "insalata", "salada", []], ["🍲", "la", "zuppa", "sopa", ["minestra"]], ["🍚", "il", "riso", "arroz", []], ["🥩", "la", "carne", "carne", ["bistecca"]], ["🍗", "il", "pollo", "frango", []], ["🥪", "il", "panino", "sanduíche", ["tramezzino"]], ["🍟", "le", "patatine", "batata frita", ["patatine fritte"]], ["🍔", "l'", "hamburger", "hambúrguer", []], ["🥐", "il", "cornetto", "croissant", ["croissant", "brioche"]], ["🍯", "il", "miele", "mel", []], ["🧈", "il", "burro", "manteiga", []], ["🧅", "la", "cipolla", "cebola", []], ["🧄", "l'", "aglio", "alho", []], ["🍄", "il", "fungo", "cogumelo", ["funghi"]], ["🍐", "la", "pera", "pera", []], ["🍑", "la", "pesca", "pêssego", []], ["🍉", "l'", "anguria", "melancia", ["cocomero"]], ["🍒", "la", "ciliegia", "cereja", ["ciliegie"]], ["🍍", "l'", "ananas", "abacaxi", []]].map(([e,art,it,pt,alt])=>({lvl:6,e,art,it,pt,alt,audio:'f6/'+sl(it)}));
+const PEOPLE=[["👩", "la", "mamma", "mãe", ["madre"]], ["👨", "il", "papà", "pai", ["padre", "babbo", "papa"]], ["👵", "la", "nonna", "avó", []], ["👴", "il", "nonno", "avô", []], ["👦", "il", "fratello", "irmão", []], ["👧", "la", "sorella", "irmã", []], ["👶", "il", "neonato", "bebê", ["bambino", "bimbo"]], ["👨‍👩‍👧", "la", "famiglia", "família", []], ["👫", "gli", "amici", "amigos", ["amico", "amica"]], ["👰", "la", "sposa", "noiva", []], ["🤵", "lo", "sposo", "noivo", []], ["👨‍⚕️", "il", "medico", "médico", ["dottore"]], ["👩‍🍳", "la", "cuoca", "cozinheira", ["cuoco"]], ["👮", "il", "poliziotto", "policial", ["poliziotta", "vigile"]], ["👨‍🚒", "il", "pompiere", "bombeiro", []], ["👩‍🏫", "la", "maestra", "professora", ["insegnante", "professoressa"]], ["👨‍🌾", "il", "contadino", "agricultor", ["agricoltore"]], ["👷", "l'", "operaio", "operário", ["muratore"]], ["👨‍✈️", "il", "pilota", "piloto", []], ["👩‍🎨", "la", "pittrice", "pintora", ["pittore", "artista"]], ["🧑‍🔧", "il", "meccanico", "mecânico", []], ["👸", "la", "principessa", "princesa", []], ["🤴", "il", "principe", "príncipe", []], ["🧑‍🚀", "l'", "astronauta", "astronauta", []]].map(([e,art,it,pt,alt])=>({lvl:7,e,art,it,pt,alt,cap:pt,audio:'f7/'+sl(it)}));
+const SUBJ_ALT={f:['ragazza','donna','bambina','signora','ragazzina'],m:['uomo','ragazzo','signore'],b:['bambino','neonato','bimbo']};
+const VERBS=[["🐶🍖", "il", "cane", "mangia", "comer", "o cachorro come", null], ["👶💤", "il", "bambino", "dorme", "dormir", "o bebê dorme", "b"], ["🏃‍♀️", "la", "ragazza", "corre", "correr", "a moça corre", "f"], ["🐦🎶", "l'", "uccello", "canta", "cantar", "o pássaro canta", null], ["🐟🌊", "il", "pesce", "nuota", "nadar", "o peixe nada", null], ["🐱🥛", "il", "gatto", "beve", "beber", "o gato bebe", null], ["👩📖", "la", "donna", "legge", "ler", "a mulher lê", "f"], ["👨✍️", "l'", "uomo", "scrive", "escrever", "o homem escreve", "m"], ["👧⚽", "la", "bambina", "gioca", "brincar", "a menina brinca", "f"], ["🕺", "il", "ragazzo", "balla", "dançar", "o rapaz dança", "m"], ["👵🍳", "la", "nonna", "cucina", "cozinhar", "a avó cozinha", null], ["🚶", "l'", "uomo", "cammina", "caminhar", "o homem caminha", "m"], ["✈️☁️", "l'", "aereo", "vola", "voar", "o avião voa", null], ["👶😭", "il", "bambino", "piange", "chorar", "o bebê chora", "b"], ["👧😂", "la", "bambina", "ride", "rir", "a menina ri", "f"], ["🚗👨", "l'", "uomo", "guida", "dirigir", "o homem dirige", "m"], ["👩‍🎨", "la", "ragazza", "dipinge", "pintar", "a moça pinta", "f"], ["🐸", "la", "rana", "salta", "pular", "o sapo pula", null], ["👨‍🍳🍝", "il", "cuoco", "cucina", "cozinhar", "o cozinheiro cozinha", null], ["🐝🌸", "l'", "ape", "vola", "voar", "a abelha voa", null]].map(([e,art,su,v,inf,pt,g])=>({lvl:8,e,art:'',sart:art,su,v,inf,pt,g,it:(art.endsWith("'")?art+su:art+' '+su)+' '+v,alt:[],cap:'ação: '+inf,audio:'f8/'+sl(su)+'-'+v}));
+const INF_IT={mangia:'mangiare',dorme:'dormire',corre:'correre',canta:'cantare',nuota:'nuotare',beve:'bere',legge:'leggere',scrive:'scrivere',gioca:'giocare',balla:'ballare',cucina:'cucinare',cammina:'camminare',vola:'volare',piange:'piangere',ride:'ridere',guida:'guidare',dipinge:'dipingere',salta:'saltare'};
+const POS9=[["sopra", "em cima"], ["sotto", "embaixo"], ["dentro", "dentro"], ["fuori", "fora"], ["a destra", "à direita"], ["a sinistra", "à esquerda"]];
+const POSF={'sopra':['sopra','su','sul','sulla'],'sotto':['sotto'],'dentro':['dentro','nella','nel'],'fuori':['fuori'],'a destra':['destra'],'a sinistra':['sinistra']};
+const SUBJ10=[["🐱", "il", "gatto", "o gato"], ["🐶", "il", "cane", "o cachorro"], ["⚽", "la", "palla", "a bola"], ["🍎", "la", "mela", "a maçã"], ["🐭", "il", "topo", "o rato"], ["🧸", "l'", "orsetto", "o ursinho"]];const PHR10={"sopra": "è sul tavolo", "sotto": "è sotto il tavolo", "dentro": "è nella scatola", "fuori": "è fuori dalla scatola", "a destra": "è a destra dell'albero", "a sinistra": "è a sinistra dell'albero"};
+const REF={'sopra':'tavolo','sotto':'tavolo','dentro':'scatola','fuori':'scatola','a destra':'albero','a sinistra':'albero'};
+function deck9(n){const o=[];for(let i=0;i<n;i++){const [pos,pt]=POS9[i%6],s=SUBJ10[Math.floor(Math.random()*SUBJ10.length)];o.push({lvl:9,e:s[0],pos,art:'',it:pos,pt,alt:[],audio:'f9/'+sl(pos)})}return shuffle(o)}
+function deck10(n){const all=[];for(const s of SUBJ10)for(const [pos,pt] of POS9){const su=s[1].endsWith("'")?s[1]+s[2]:s[1]+' '+s[2];
+  all.push({lvl:10,e:s[0],su:s[2],pos,art:'',it:su+' '+PHR10[pos],pt:s[3]+' está '+pt+({'sopra':' da mesa','sotto':' da mesa','dentro':' da caixa','fuori':' da caixa','a destra':' da árvore','a sinistra':' da árvore'})[pos],alt:[],audio:'f10/'+sl(s[2])+'-'+sl(pos)})}
+  return shuffle(all).slice(0,n)}
+const anyKey=(keys,words,tol)=>words.some(w=>{const k=pkey(norm(w).replace(/ /g,''));return keys.some(x=>x===k||(tol&&k.length>=6&&lev(x,k)<=1))});
+function posSaid(keys){for(const p in POSF)if(anyKey(keys,POSF[p],false))return p;return null}
+function checkV(heard,w){const keys=core(heard).split(' ').filter(Boolean).map(pkey);
+  const subs=[w.su,...(w.g?SUBJ_ALT[w.g]:[])];const subOk=anyKey(keys,subs,true),verbOk=anyKey(keys,[w.v],true);
+  if(subOk&&verbOk)return{ok:true};
+  if(anyKey(keys,[INF_IT[w.v]],true))return{ok:false,hint:'Quase! Use “'+w.v+'” (ele/ela '+w.pt.split(' ').pop()+')'};
+  if(verbOk)return{ok:false,hint:'Diga quem: '+(w.sart.endsWith("'")?w.sart+w.su:w.sart+' '+w.su)+'…'};
+  if(subOk)return{ok:false,hint:'E o que está fazendo?'};return{ok:false}}
+function checkW(heard,w){const keys=norm(heard).split(' ').filter(Boolean).map(pkey),p=posSaid(keys);
+  if(anyKey(keys,POSF[w.pos],false))return{ok:true};return{ok:false,hint:p?'Essa é outra posição.':''}}
+function checkX(heard,w){const keys=core(heard).split(' ').filter(Boolean).map(pkey);
+  const subOk=anyKey(keys,[w.su],true),posOk=anyKey(keys,POSF[w.pos],false),refOk=anyKey(keys,[REF[w.pos]],true),other=posSaid(keys);
+  if(subOk&&posOk&&refOk)return{ok:true};
+  if(!posOk&&other)return{ok:false,hint:'Confira a posição.'};
+  if(subOk&&posOk)return{ok:false,hint:'Diga também onde: …'+PHR10[w.pos].replace('è ','')};
+  if(posOk&&refOk)return{ok:false,hint:'Diga quem: '+w.it.split(' è ')[0]+'…'};
+  return{ok:false}}
 const PER_GAME=20,LIVES=3;let TIME=20,level=1;
 setTimeout(()=>WORDS.forEach(w=>[w.it,...w.alt].forEach(x=>OTHER.add(core(x)))));
 const full=w=>!w.art?w.it:w.art.endsWith("'")?w.art+w.it:w.art+' '+w.it;
@@ -290,7 +343,7 @@ function check2(heard,w){ // devolve {ok, hint}
   if(numOk&&sgUsed)return{ok:false,hint:'Quase! Agora no plural.'};
   if(plOk)return{ok:false,hint:'Confira quantos são.'};
   return{ok:false}}
-function isRight(heard,w){return w.lvl==='n'?checkN(heard,w).ok:w.lvl==='c'?checkC(heard,w).ok:w.lvl===3?check3(heard,w).ok:w.lvl===2?check2(heard,w).ok:matches(heard,w)}
+function isRight(heard,w){return w.lvl===8?checkV(heard,w).ok:w.lvl===9?checkW(heard,w).ok:w.lvl===10?checkX(heard,w).ok:w.lvl==='n'?checkN(heard,w).ok:w.lvl==='c'?checkC(heard,w).ok:w.lvl===3?check3(heard,w).ok:w.lvl===2?check2(heard,w).ok:matches(heard,w)}
 
 /* ---------- estado ---------- */
 let state='menu',deck=[],idx=0,score=0,lives=LIVES,hits=0,helped=false,timeLeft=TIME,phase='ask',missed=[],best=0,listening=false,last=0,nextT=null;
@@ -363,10 +416,10 @@ function stopRec(){userStop=true;clearTimeout(recStop);clearTimeout(watchdog);tr
 function killRec(){clearTimeout(recStop);clearTimeout(watchdog);clearTimeout(judgeT);if(!rec)return;const r=rec;rec=null;try{r.onresult=r.onend=r.onerror=null;r.abort()}catch(_){}}
 function startRec(cont){killRec();restarts=0;rec=setupRec(cont);heardFinal='';accum='';curText='';gotSomething=false;userStop=false;fatal=false;
   try{rec.start()}catch(e){$('note').textContent='Não consegui ligar o microfone. Toque de novo.';return}
-  const secs=deck[idx]&&deck[idx].lvl===3?16:12;listenUntil=Date.now()+secs*1000;
+  const secs=deck[idx]&&[3,8,10].includes(deck[idx].lvl)?16:12;listenUntil=Date.now()+secs*1000;
   listening=true;micUI();$('note').textContent='';recStop=setTimeout(stopRec,secs*1000);
   watchdog=setTimeout(()=>{if(listening&&!gotSomething&&!retried){retried=true;startRec(false)}},3500)}
-function hintFor(said){const w=deck[idx],h=w.lvl==='n'?checkN(said,w).hint:w.lvl===3?check3(said,w).hint:w.lvl===2?check2(said,w).hint:'';$('heard').insertAdjacentText('beforeend','  · '+(h||'tente de novo'))}
+function hintFor(said){const w=deck[idx],h=w.lvl===8?checkV(said,w).hint:w.lvl===9?checkW(said,w).hint:w.lvl===10?checkX(said,w).hint:w.lvl==='n'?checkN(said,w).hint:w.lvl===3?check3(said,w).hint:w.lvl===2?check2(said,w).hint:'';$('heard').insertAdjacentText('beforeend','  · '+(h||'tente de novo'))}
 function micUI(){$('mic').classList.toggle('on',listening);$('micTxt').textContent=listening?'Parar':'Falar';
   if(listening&&phase==='ask'){$('heard').textContent='🎙️ Ouvindo… fale agora'}}
 function heardShow(t){$('heard').innerHTML='Ouvi: <b></b>';$('heard').querySelector('b').textContent='“'+t.trim()+'”'}
@@ -404,34 +457,43 @@ function tinted(e,hex){const key=e+hex;if(TC[key])return TC[key];const S=180,c=d
     p[i]=o[0];p[i+1]=o[1];p[i+2]=o[2]}
   x.putImageData(d,0,0);return TC[key]=c}
 function tintedCopy(e,hex){const src=tinted(e,hex),c=document.createElement('canvas');c.width=src.width;c.height=src.height;c.getContext('2d').drawImage(src,0,0);c.setAttribute('aria-hidden','true');return c}
-function drawPic(w){const p=$('pic');p.innerHTML='';
+function scene(w){const sc=document.createElement('div');sc.className='scene';const add=(cls,html,css)=>{const d=document.createElement('div');d.className=cls;if(html)d.textContent=html;if(css)d.style.cssText=css;sc.append(d);return d};
+  add('gnd');const pos=w.pos,obj=w.e;
+  if(pos==='sopra'||pos==='sotto'){add('leg','','left:24%');add('leg','','right:24%');add('tbl');add('it',obj,pos==='sopra'?'left:50%;top:44%':'left:50%;top:97%')}
+  else if(pos==='dentro'||pos==='fuori'){add('box back');if(pos==='dentro'){add('it',obj,'left:50%;top:74%')}add('box front');if(pos==='fuori'){add('it',obj,(Math.random()<.5?'left:16%':'left:84%')+';top:97%')}}
+  else{add('it tree','🌳','left:50%;top:97%');add('it',obj,(pos==='a destra'?'left:84%':'left:16%')+';top:97%')}
+  return sc}
+function drawPic(w){const p=$('pic');p.innerHTML='';const cap=$('cap');cap.hidden=!w.cap;cap.textContent=w.cap||'';
+  $('ask').textContent=w.lvl===9||w.lvl===10?'Onde está?':w.lvl===8?'O que está acontecendo?':'Como se diz em italiano?';
+  if(w.lvl===9||w.lvl===10){p.classList.remove('multi','single');p.append(scene(w));return}
+  if(w.lvl>=6){p.classList.remove('multi','single');const d=document.createElement('span');d.textContent=w.e;if(w.lvl===8&&[...w.e].length>1)d.className='duo';p.append(d);return}
   if(w.lvl==='n'){p.classList.remove('multi','single');const d=document.createElement('div');d.className='numeral';d.textContent=w.n;p.append(d);return}
   if(w.lvl==='c'){p.classList.remove('multi','single');const d=document.createElement('div');d.className='blob';d.style.background=w.hex;p.append(d);return}p.classList.toggle('multi',w.lvl>=2&&w.n>1);p.classList.toggle('single',w.lvl===3&&w.n===1);
   if(w.lvl===3&&w.n===1){p.append(tintedCopy(w.e,w.hex));return}
-  if(w.lvl===1){p.textContent=w.e;return}
+  if(w.lvl===1){p.classList.remove('multi','single');p.textContent=w.e;return}
   const n=w.n,c=n<=3?n:n===4?2:n<=6?3:n<=9?3:5,r=Math.ceil(n/c);p.style.setProperty('--c',c);p.style.setProperty('--k',(1.25/Math.max(c,r*1.15)).toFixed(3));
   for(let i=0;i<n;i++){const sp=document.createElement('span');if(w.lvl===3)sp.append(tintedCopy(w.e,w.hex));else sp.textContent=w.e;p.append(sp)}}
 function hearts(){$('hearts').textContent='❤️'.repeat(lives)+'🤍'.repeat(LIVES-lives)}
-function hud(){$('pts').innerHTML=score+'<small>pts</small>';hearts();$('count').textContent=(level===2?'Número ':level===4?'Cor ':'Palavra ')+Math.min(idx+1,deck.length)+' de '+deck.length}
+function hud(){$('pts').innerHTML=score+'<small>pts</small>';hearts();$('count').textContent=(level===2?'Número ':level===4?'Cor ':level>=8?'Frase ':'Palavra ')+Math.min(idx+1,deck.length)+' de '+deck.length}
 function show(){const w=deck[idx];phase='ask';helped=false;timeLeft=TIME;
   drawPic(w);$('pic').classList.remove('pop','shake');void $('pic').offsetWidth;$('pic').classList.add('pop');
   $('ask').hidden=false;$('answer').hidden=true;$('ptxt').hidden=true;$('heard').textContent='';$('badge').hidden=true;$('hear').classList.remove('used');
   $('typeIn').value='';$('mic').disabled=false;hud()}
-function reveal(ok){const w=deck[idx];$('ask').hidden=true;$('answer').hidden=false;$('answer').textContent=full(w);$('answer').className='answer '+(ok?'ok':'no');
+function reveal(ok){const w=deck[idx];$('cap').hidden=true;$('ask').hidden=true;$('answer').hidden=false;$('answer').textContent=full(w);$('answer').className='answer '+(ok?'ok':'no');
   $('ptxt').hidden=false;$('ptxt').textContent=w.pt;$('mic').disabled=true}
 function right(){if(phase!=='ask')return;phase='done';const pts=helped?5:10;score+=pts;hits++;sRight();reveal(true);
   $('heard').textContent=(helped?'Bene! +5':'Perfetto! +10');$('pic').classList.remove('pop');void $('pic').offsetWidth;$('pic').classList.add('pop');hud();
   nextT=setTimeout(next,1500)}
 function wrongTry(said){if(phase!=='ask')return;sWrong();$('pic').classList.remove('shake','pop');void $('pic').offsetWidth;$('pic').classList.add('shake');
   const h=$('heard');if(!h.textContent)h.textContent='Não foi dessa vez.';
-  const w=deck[idx],hint=!said?'':w.lvl==='n'?checkN(said,w).hint:w.lvl===3?check3(said,w).hint:w.lvl===2?check2(said,w).hint:'';h.insertAdjacentText('beforeend','  · '+(hint||'tente de novo'))}
+  const w=deck[idx],hint=!said?'':w.lvl===8?checkV(said,w).hint:w.lvl===9?checkW(said,w).hint:w.lvl===10?checkX(said,w).hint:w.lvl==='n'?checkN(said,w).hint:w.lvl===3?check3(said,w).hint:w.lvl===2?check2(said,w).hint:'';h.insertAdjacentText('beforeend','  · '+(hint||'tente de novo'))}
 function timeout(){if(phase!=='ask')return;phase='done';if(listening||rec){killRec();listening=false;micUI()}lives--;missed.push(deck[idx]);sWrong();reveal(false);
   $('heard').textContent='Acabou o tempo!';say(deck[idx]);hud();nextT=setTimeout(next,2400)}
 function next(){idx++;if(lives<=0||idx>=deck.length){end();return}show()}
 
 /* ---------- fluxo ---------- */
-function begin(){ac();try{AC&&AC.resume()}catch(e){};clearTimeout(nextT);TIME=[0,20,15,25,15,30][level];best=bestOf(level);$('lvlChip').textContent='Fase '+level;
-  deck=level===5?deck3(PER_GAME):level===4?deckC():level===3?deck2(PER_GAME):level===2?deckN():shuffle(WORDS.slice()).slice(0,PER_GAME);idx=0;score=0;lives=LIVES;hits=0;missed=[];
+function begin(){ac();try{AC&&AC.resume()}catch(e){};clearTimeout(nextT);TIME=[0,20,15,25,15,30,20,20,25,15,30][level];best=bestOf(level);$('lvlChip').textContent='Fase '+level;
+  deck=level===10?deck10(PER_GAME):level===9?deck9(PER_GAME):level===8?shuffle(VERBS.slice()):level===7?shuffle(PEOPLE.slice()).slice(0,PER_GAME):level===6?shuffle(FOOD.slice()).slice(0,PER_GAME):level===5?deck3(PER_GAME):level===4?deckC():level===3?deck2(PER_GAME):level===2?deckN():shuffle(WORDS.slice()).slice(0,PER_GAME);idx=0;score=0;lives=LIVES;hits=0;missed=[];
   state='play';$('menu').hidden=true;$('over').hidden=true;$('note').textContent=SR?'':'Este navegador não reconhece voz. Digite a palavra.';showType(!SR);show();
   unlockAudio();}
 document.querySelectorAll('.lv').forEach(b=>b.addEventListener('click',()=>{level=+b.dataset.level;begin()}));$('again').addEventListener('click',begin);
@@ -439,12 +501,12 @@ $('toMenu').addEventListener('click',()=>{$('over').hidden=true;$('menu').hidden
 function bestOf(l){try{return +localStorage.getItem('italiano-f'+l+'-best')||0}catch(e){return 0}}
 try{if(!localStorage.getItem('italiano-migr')){const a=localStorage.getItem('italiano-l1-best'),b=localStorage.getItem('italiano-l2-best');
   if(a)localStorage.setItem('italiano-f1-best',a);if(b)localStorage.setItem('italiano-f3-best',b);localStorage.setItem('italiano-migr','1')}}catch(e){}
-function showRecs(){[1,2,3,4,5].forEach(l=>$('rec'+l).textContent=bestOf(l))}
+function showRecs(){[1,2,3,4,5,6,7,8,9,10].forEach(l=>$('rec'+l).textContent=bestOf(l))}
 showRecs();
 function end(){state='over';phase='done';if(listening||rec){killRec();listening=false;micUI()}const nb=score>best;if(nb){best=score;try{localStorage.setItem('italiano-f'+level+'-best',best)}catch(e){}}
   $('oTitle').textContent=lives<=0?'Peccato! Acabaram as vidas':(nb&&score>0?'Bravissimo! Recorde!':'Bravo!');$('oScore').textContent=score;$('oHits').textContent=hits+'/'+idx;$('oBest').textContent=best;
   const ul=$('revList');ul.innerHTML='';$('review').hidden=!missed.length;
-  missed.forEach(w=>{const li=document.createElement('li');const e=document.createElement('span');e.className='e';if(w.lvl==='n'){e.textContent=w.n;e.style.fontFamily='var(--display)'}else if(w.lvl==='c'){e.style.cssText='display:inline-block;width:24px;height:24px;border-radius:50%;border:2px solid rgba(0,0,0,.2);background:'+w.hex}else if(w.lvl===3){const c=tintedCopy(w.e,w.hex);c.style.cssText='width:26px;height:26px;vertical-align:middle';if(w.n>1)e.append(w.n+'×');e.append(c)}else e.textContent=w.lvl===2?w.n+'×'+w.e:w.e;const t=document.createElement('span');t.textContent=full(w);
+  missed.forEach(w=>{const li=document.createElement('li');const e=document.createElement('span');e.className='e';if(w.lvl>=6)e.textContent=w.e;else if(w.lvl==='n'){e.textContent=w.n;e.style.fontFamily='var(--display)'}else if(w.lvl==='c'){e.style.cssText='display:inline-block;width:24px;height:24px;border-radius:50%;border:2px solid rgba(0,0,0,.2);background:'+w.hex}else if(w.lvl===3){const c=tintedCopy(w.e,w.hex);c.style.cssText='width:26px;height:26px;vertical-align:middle';if(w.n>1)e.append(w.n+'×');e.append(c)}else e.textContent=w.lvl===2?w.n+'×'+w.e:w.e;const t=document.createElement('span');t.textContent=full(w);
     const b=document.createElement('button');b.type='button';b.textContent='📢';b.setAttribute('aria-label','Ouvir '+full(w));b.addEventListener('click',()=>{unlockAudio();say(w)});li.append(e,t,b);ul.append(li)});
   setTimeout(()=>{$('over').hidden=false},500)}
 
@@ -455,7 +517,7 @@ function tick(now){const dt=Math.min(.1,(now-(last||now))/1000);last=now;
   requestAnimationFrame(tick)}
 requestAnimationFrame(tick);
 hud();
-window.__ita={type:v=>{$('typeIn').value=v;$('typeForm').requestSubmit()},st:()=>({state,phase,idx,score,lives,hits,word:deck[idx]&&deck[idx].it,w:deck[idx]}),matches,check2,check3,checkN,checkC,tintedCopy,WORDS,NOUNS2,NOUNS3,COLORS};
+window.__ita={type:v=>{$('typeIn').value=v;$('typeForm').requestSubmit()},st:()=>({state,phase,idx,score,lives,hits,word:deck[idx]&&deck[idx].it,w:deck[idx]}),matches,check2,check3,checkN,checkC,checkV,checkW,checkX,scene,FOOD,PEOPLE,VERBS,tintedCopy,WORDS,NOUNS2,NOUNS3,COLORS};
 if('serviceWorker' in navigator){addEventListener('load',()=>{navigator.serviceWorker.register('../sw.js',{scope:'../'}).catch(()=>{})})}
 })();
 </script>
