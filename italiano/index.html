@@ -330,35 +330,41 @@ const sWrong=()=>{tone(220,.18,'square',.06);tone(180,.22,'square',.05,.12)};
 /* ---------- voz: ouvir o jogador (microfone) ---------- */
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;let rec=null,heardFinal='';
 let recStop=null;
-let gotSomething=false,watchdog=null,retried=false;
+let restarts=0,gotSomething=false,watchdog=null,retried=false,judgeT=null,accum='',curText='',listenUntil=0,userStop=false,fatal=false;
+// Escuta "longa": junta tudo o que foi dito, religa se o iPhone parar no meio e só julga depois de uma pausa.
 function setupRec(cont=true){if(!SR)return null;const r=new SR();r.lang='it-IT';r.interimResults=true;r.maxAlternatives=5;r.continuous=cont;
   r.onaudiostart=()=>{gotSomething=true};r.onspeechstart=()=>{gotSomething=true};
-  r.onresult=e=>{if(r!==rec)return;gotSomething=true;if(phase!=='ask')return;
-    // confere tudo o que já foi ouvido (parcial ou final) — acertou, para na hora
-    const all=[];for(let i=0;i<e.results.length;i++){const res=e.results[i];for(let k=0;k<res.length;k++)all.push(res[k].transcript)}
-    const tail=[];for(let i=Math.max(0,e.results.length-2);i<e.results.length;i++)tail.push(e.results[i][0].transcript);all.push(tail.join(' '));
-    for(const t of all){if(isRight(t,deck[idx])){heardShow(t);stopRec();right();return}}
-    const res=e.results[e.results.length-1];
-    if(res.isFinal){heardFinal=res[0].transcript;heardShow(heardFinal);hintFor(heardFinal);sWrong()}   // errou: mostra só o resultado final e segue ouvindo
-  };
-  r.onerror=e=>{if(r!==rec)return;listening=false;clearTimeout(watchdog);micUI();const m={
-      'not-allowed':'O microfone foi bloqueado. Libere o microfone para este site (Ajustes › Safari › Microfone) ou use Digitar.',
+  r.onresult=e=>{if(r!==rec)return;gotSomething=true;if(phase!=='ask')return;clearTimeout(judgeT);
+    const parts=[];for(let i=0;i<e.results.length;i++)parts.push(e.results[i][0].transcript);curText=parts.join(' ');
+    const tries=[(accum+' '+curText).trim(),curText];for(let i=0;i<e.results.length;i++){const res=e.results[i];for(let k=0;k<res.length;k++)tries.push(res[k].transcript)}
+    for(const t of tries){if(t&&isRight(t,deck[idx])){heardShow(t);finishListen();right();return}}
+    $('heard').textContent='🎙️ Ouvindo…';
+    // errou? espera 1,5 s de silêncio antes de avisar (a pessoa pode estar no meio da frase)
+    judgeT=setTimeout(()=>{if(phase!=='ask')return;const said=(accum+' '+curText).trim();if(!said)return;heardFinal=said;heardShow(said);hintFor(said);sWrong()},1500)};
+  r.onerror=e=>{if(r!==rec)return;clearTimeout(watchdog);
+    if(['not-allowed','service-not-allowed','audio-capture','network'].includes(e.error))fatal=true;
+    const m={'not-allowed':'O microfone foi bloqueado. Libere o microfone para este site (Ajustes › Safari › Microfone) ou use Digitar.',
       'service-not-allowed':'O reconhecimento de voz está desligado. Ative o Ditado em Ajustes › Geral › Teclado, ou use Digitar.',
-      'no-speech':'Não ouvi nada. Toque no microfone e fale perto do celular.',
       'audio-capture':'O microfone está ocupado por outro app. Feche-o e tente de novo.',
       'network':'O reconhecimento de voz precisa de internet. Confira a conexão.'}[e.error];
-    if(e.error!=='aborted')$('note').textContent=m||('Microfone com problema ('+e.error+'). Toque de novo ou use Digitar.');
-    if(e.error==='not-allowed'||e.error==='service-not-allowed')showType(true)};
-  r.onend=()=>{if(r!==rec)return;const was=listening;listening=false;clearTimeout(recStop);clearTimeout(watchdog);micUI();
-    if(was&&phase==='ask'&&heardFinal&&!isRight(heardFinal,deck[idx]))wrongTry(heardFinal);
-    else if(was&&phase==='ask'&&!heardFinal)$('heard').textContent='Toque no microfone e fale de novo.';heardFinal=''};
+    if(m)$('note').textContent=m;if(e.error==='not-allowed'||e.error==='service-not-allowed')showType(true)};
+  r.onend=()=>{if(r!==rec)return;clearTimeout(watchdog);
+    // o iPhone parou sozinho mas ainda há tempo: guarda o que ouviu e religa
+    if(listening&&phase==='ask'&&!userStop&&!fatal&&Date.now()<listenUntil&&restarts<8){restarts++;accum=(accum+' '+curText).trim();curText='';
+      rec=setupRec(r.continuous);try{rec.start();return}catch(_){}}
+    endListen()};
   return r}
-function stopRec(){clearTimeout(recStop);clearTimeout(watchdog);try{rec&&rec.stop()}catch(_){}}
-function killRec(){clearTimeout(recStop);clearTimeout(watchdog);if(!rec)return;const r=rec;rec=null;try{r.onresult=r.onend=r.onerror=null;r.abort()}catch(_){}}
-function startRec(cont){killRec();rec=setupRec(cont);heardFinal='';gotSomething=false;
+function endListen(){const said=(accum+' '+curText).trim();listening=false;clearTimeout(recStop);clearTimeout(watchdog);micUI();
+  if(phase==='ask'){clearTimeout(judgeT);if(said&&!isRight(said,deck[idx])){if(heardFinal!==said){heardShow(said);hintFor(said);sWrong()}}
+    else if(!said&&!fatal)$('heard').textContent='Não ouvi nada. Toque no microfone e fale de novo.'}
+  heardFinal='';accum='';curText=''}
+function finishListen(){userStop=true;clearTimeout(judgeT);clearTimeout(recStop);clearTimeout(watchdog);listening=false;micUI();const r=rec;rec=null;try{r&&r.abort()}catch(_){}accum='';curText=''}
+function stopRec(){userStop=true;clearTimeout(recStop);clearTimeout(watchdog);try{rec&&rec.stop()}catch(_){endListen()}}
+function killRec(){clearTimeout(recStop);clearTimeout(watchdog);clearTimeout(judgeT);if(!rec)return;const r=rec;rec=null;try{r.onresult=r.onend=r.onerror=null;r.abort()}catch(_){}}
+function startRec(cont){killRec();restarts=0;rec=setupRec(cont);heardFinal='';accum='';curText='';gotSomething=false;userStop=false;fatal=false;
   try{rec.start()}catch(e){$('note').textContent='Não consegui ligar o microfone. Toque de novo.';return}
-  listening=true;micUI();$('note').textContent='';recStop=setTimeout(stopRec,9000);
-  // se o iPhone não começar a ouvir em 3,5 s, tenta de novo no modo simples
+  const secs=deck[idx]&&deck[idx].lvl===3?16:12;listenUntil=Date.now()+secs*1000;
+  listening=true;micUI();$('note').textContent='';recStop=setTimeout(stopRec,secs*1000);
   watchdog=setTimeout(()=>{if(listening&&!gotSomething&&!retried){retried=true;startRec(false)}},3500)}
 function hintFor(said){const w=deck[idx],h=w.lvl==='n'?checkN(said,w).hint:w.lvl===3?check3(said,w).hint:w.lvl===2?check2(said,w).hint:'';$('heard').insertAdjacentText('beforeend','  · '+(h||'tente de novo'))}
 function micUI(){$('mic').classList.toggle('on',listening);$('micTxt').textContent=listening?'Parar':'Falar';
