@@ -509,7 +509,7 @@ function startRec(cont,auto=false){lastAuto=auto;recStartedAt=Date.now();if(IOS)
   watchdog=setTimeout(()=>{if(listening&&!gotSomething&&!retried){retried=true;startRec(false)}},3500)}
 function hintFor(said){const w=deck[idx],h=w.lvl===13?checkQ(said,w).hint:w.lvl===12?checkA(said,w).hint:w.lvl==='n'&&false?'':w.lvl===8?checkV(said,w).hint:w.lvl===9?checkW(said,w).hint:w.lvl===10?checkX(said,w).hint:w.lvl==='n'?checkN(said,w).hint:w.lvl===3?check3(said,w).hint:w.lvl===2?check2(said,w).hint:'';$('heard').insertAdjacentText('beforeend','  · '+(h||'tente de novo'))}
 function micUI(){$('mic').classList.toggle('on',listening);$('micTxt').textContent=listening?'Parar':'Falar';
-  if(listening&&phase==='ask'){$('heard').textContent='🎙️ Ouvindo… fale agora'}}
+  const h=$('heard').textContent;if(listening&&phase==='ask'&&(!h||h.startsWith('🎙️')||h.startsWith('Não ouvi')))$('heard').textContent='🎙️ Ouvindo… fale agora'}
 let lastSaid='';
 function heardShow(t){lastSaid=t.trim();$('heard').innerHTML='Ouvi: <b></b>';$('heard').querySelector('b').textContent='“'+t.trim()+'”'}
 $('mic').addEventListener('click',()=>{ac();if(state!=='play'||phase!=='ask')return;
