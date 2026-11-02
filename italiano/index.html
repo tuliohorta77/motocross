@@ -216,7 +216,7 @@ function synth(text){try{const ss=speechSynthesis;const go=()=>{try{ss.resume()}
   if(ss.speaking||ss.pending){ss.cancel();setTimeout(go,150)}else go()}catch(e){}}
 function say(w){ // w = palavra do jogo
   const text=full(w);let started=false;
-  try{player.pause();player.src='audio/'+slug(w.it)+'.mp3';player.currentTime=0;
+  try{player.pause();player.src='audio/'+slug(w.it)+'.mp3?v=2';player.currentTime=0;
     player.onplaying=()=>{started=true};
     const p=player.play();if(p&&p.catch)p.catch(()=>{if(!started){started=true;synth(text)}})}catch(e){synth(text)}
   player.onerror=()=>{if(!started){started=true;synth(text)}};
