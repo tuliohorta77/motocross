@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Fliperama">
+<meta name="theme-color" content="#fbf3e4">
+<link rel="apple-touch-icon" href="../icon-180.png">
+<link rel="icon" href="../icon-192.png">
+<link rel="manifest" href="../manifest.json">
+<title>Parla Italiano</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap">
+<style>
+/* Layout: coluna única centrada — placar no topo, cartão com a figura e o tempo no meio, botões de falar/ouvir/digitar embaixo */
+:root{
+  --paper:#fbf3e4; --card:#fffaf1; --ink:#2b2118; --muted:#7d6a58; --verde:#0b8a4a; --rosso:#cf2e3a; --terra:#c8643a; --line:#ead9bf; --gold:#f2b531;
+  --display:'Fredoka','Arial Rounded MT Bold','Trebuchet MS',sans-serif; --body:'Nunito','Trebuchet MS',sans-serif;
+  color-scheme:light;
+}
+html{box-sizing:border-box;height:100%;background:var(--paper);overflow:hidden;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*,*::before,*::after{box-sizing:inherit}
+[hidden]{display:none!important}
+body{height:100%;margin:0;overflow:hidden;background:var(--paper);color:var(--ink);font-family:var(--body);
+  -webkit-tap-highlight-color:transparent;
+  background-image:linear-gradient(90deg,var(--verde) 0 33.3%,#fff 33.3% 66.6%,var(--rosso) 66.6%);background-size:100% 6px;background-repeat:no-repeat}
+.app{height:100%;max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:12px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px 14px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.back{font-family:var(--display);font-weight:600;font-size:15px;color:var(--ink);text-decoration:none;background:var(--card);border:2px solid var(--line);border-radius:12px;padding:7px 11px}
+.score{display:flex;align-items:center;gap:12px}
+.pts{font-family:var(--display);font-weight:700;font-size:24px;font-variant-numeric:tabular-nums;line-height:1}
+.pts small{font-size:12px;font-weight:600;color:var(--muted);margin-left:3px}
+.hearts{font-size:20px;letter-spacing:2px;line-height:1}
+.meta{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:800;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.chip{background:var(--verde);color:#fff;border-radius:999px;padding:4px 10px;letter-spacing:.04em}
+.card{flex:1;min-height:0;background:var(--card);border:2px solid var(--line);border-radius:26px;box-shadow:0 6px 0 var(--line);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:16px;position:relative;overflow:hidden;text-align:center}
+.ask{font-family:var(--display);font-weight:600;font-size:17px;color:var(--muted);margin:0}
+.pic{font-size:min(34vmin,170px);line-height:1.05;filter:drop-shadow(0 8px 10px rgba(80,50,20,.18));transition:transform .2s}
+.pic.pop{animation:pop .35s ease-out}
+.pic.shake{animation:shake .4s}
+@keyframes pop{0%{transform:scale(.6)}70%{transform:scale(1.08)}100%{transform:scale(1)}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-12px)}40%{transform:translateX(10px)}60%{transform:translateX(-7px)}80%{transform:translateX(5px)}}
+.answer{font-family:var(--display);font-weight:700;font-size:clamp(28px,8vmin,40px);line-height:1.1;margin:0}
+.answer.ok{color:var(--verde)}.answer.no{color:var(--rosso)}
+.pt{font-size:16px;font-weight:700;color:var(--muted);margin:0}
+.heard{font-size:16px;font-weight:700;color:var(--muted);min-height:22px;margin:0}
+.heard b{color:var(--ink)}
+.badge{position:absolute;top:12px;right:12px;font-family:var(--display);font-weight:700;font-size:15px;color:#fff;background:var(--terra);border-radius:999px;padding:5px 11px}
+.timer{width:100%;height:12px;background:#efe2cb;border-radius:999px;overflow:hidden}
+.timer i{display:block;height:100%;width:100%;background:var(--verde);border-radius:999px;transform-origin:left;transition:background .3s}
+.controls{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px}
+.side{font-family:var(--display);font-weight:600;font-size:15px;background:var(--card);color:var(--ink);border:2px solid var(--line);border-radius:18px;
+  padding:10px 8px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;line-height:1.1;touch-action:manipulation}
+.side .ic{font-size:26px}
+.side small{font-family:var(--body);font-size:12px;font-weight:800;color:var(--terra)}
+.side:active{transform:translateY(2px)}
+.side.used{border-color:var(--terra);background:#fdeee3}
+.mic{width:min(30vmin,118px);height:min(30vmin,118px);border-radius:50%;border:0;background:var(--rosso);color:#fff;font-family:var(--display);font-weight:700;font-size:15px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;box-shadow:0 6px 0 #8f1d26;touch-action:manipulation}
+.mic .ic{font-size:clamp(30px,9vmin,42px);line-height:1}
+.mic:active{transform:translateY(3px);box-shadow:0 3px 0 #8f1d26}
+.mic.on{background:var(--verde);box-shadow:0 6px 0 #075c31;animation:pulse 1s infinite}
+@keyframes pulse{0%{box-shadow:0 6px 0 #075c31,0 0 0 0 rgba(11,138,74,.5)}100%{box-shadow:0 6px 0 #075c31,0 0 0 22px rgba(11,138,74,0)}}
+.mic:disabled{opacity:.45}
+form.type{display:flex;gap:8px}
+form.type input{flex:1;min-width:0;font-family:var(--display);font-weight:600;font-size:20px;padding:12px 14px;border:2px solid var(--line);border-radius:14px;background:#fff;color:var(--ink)}
+form.type button{font-family:var(--display);font-weight:700;font-size:18px;border:0;border-radius:14px;padding:0 18px;background:var(--verde);color:#fff;cursor:pointer}
+.note{font-size:13px;font-weight:700;color:var(--muted);text-align:center;margin:0}
+.panel{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(43,33,24,.45);z-index:5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px}
+.sheet{width:min(440px,100%);max-height:100%;overflow:auto;background:var(--card);border-radius:24px;padding:22px 20px 20px;border:3px solid var(--line);
+  display:flex;flex-direction:column;gap:14px;text-align:center;box-shadow:0 10px 30px rgba(43,33,24,.3)}
+.sheet h1,.sheet h2{font-family:var(--display);font-weight:700;margin:0;line-height:1;text-wrap:balance}
+.sheet h1{font-size:clamp(34px,10vmin,46px);color:var(--rosso)}
+.sheet h1 span{color:var(--verde)}
+.sheet h2{font-size:30px;color:var(--verde)}
+.lvl{font-family:var(--display);font-weight:600;font-size:16px;color:var(--muted)}
+.rules{display:grid;grid-template-columns:auto 1fr;gap:9px 12px;text-align:left;font-size:15px;line-height:1.3;font-weight:700;align-items:center}
+.rules .ic{font-size:24px;text-align:center}
+.go{font-family:var(--display);font-weight:700;font-size:22px;background:var(--rosso);color:#fff;border:0;border-radius:16px;padding:14px 10px;cursor:pointer;box-shadow:0 5px 0 #8f1d26;touch-action:manipulation}
+.go:active{transform:translateY(3px);box-shadow:0 2px 0 #8f1d26}
+.alt{font-family:var(--display);font-weight:600;font-size:15px;color:var(--verde);text-decoration:none;padding:4px}
+.nums{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.nums div{background:#f6ead5;border-radius:14px;padding:10px 6px;display:flex;flex-direction:column;gap:4px}
+.nums b{font-family:var(--display);font-weight:700;font-size:26px;font-variant-numeric:tabular-nums}
+.nums span{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.review{text-align:left;display:flex;flex-direction:column;gap:6px}
+.review p{margin:0;font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.review ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
+.review li{background:#f6ead5;border-radius:12px;padding:6px 10px;display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px;min-width:0}
+.review li button{border:0;background:none;font-size:18px;cursor:pointer;padding:0;margin-left:auto}
+.review li .e{font-size:22px}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+@media (max-height:520px){.pic{font-size:24vmin}.card{gap:4px;padding:10px}.app{gap:8px;padding-block:10px}.mic{width:84px;height:84px}}
+@media (prefers-reduced-motion:reduce){.pic.pop,.pic.shake,.mic.on{animation:none}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <a class="back" href="../">◀ Jogos</a>
+    <div class="score"><span class="pts" id="pts">0<small>pts</small></span><span class="hearts" id="hearts" aria-label="vidas">❤️❤️❤️</span></div>
+  </div>
+  <div class="meta"><span class="chip">Livello 1</span><span id="count">Palavra 1 de 20</span></div>
+
+  <div class="card" id="card">
+    <span class="badge" id="badge" hidden>vale 5</span>
+    <p class="ask" id="ask">Como se diz em italiano?</p>
+    <div class="pic" id="pic" aria-live="polite">🍎</div>
+    <p class="answer" id="answer" hidden></p>
+    <p class="pt" id="ptxt" hidden></p>
+    <p class="heard" id="heard"></p>
+    <div class="timer"><i id="bar"></i></div>
+  </div>
+
+  <div class="controls">
+    <button class="side" id="hear" type="button"><span class="ic">📢</span>Ouvir<small>vale 5 pts</small></button>
+    <button class="mic" id="mic" type="button" aria-label="Falar"><span class="ic">🎤</span><span id="micTxt">Falar</span></button>
+    <button class="side" id="kb" type="button"><span class="ic">⌨️</span>Digitar<small id="kbSub">se preferir</small></button>
+  </div>
+  <form class="type" id="typeForm" hidden autocomplete="off">
+    <input id="typeIn" type="text" inputmode="text" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="escreva em italiano">
+    <button type="submit">OK</button>
+  </form>
+  <p class="note" id="note"></p>
+</div>
+
+<div class="panel" id="menu">
+  <div class="sheet">
+    <h1>Parla <span>Italiano!</span></h1>
+    <span class="lvl">Livello 1 · palavras do dia a dia</span>
+    <div class="rules">
+      <span class="ic">🖼️</span><span>Aparece uma figura. Diga o nome dela em italiano.</span>
+      <span class="ic">🎤</span><span>Toque no microfone e fale. Acertou sozinho: <b>10 pontos</b>.</span>
+      <span class="ic">📢</span><span>Toque no megafone para ouvir a palavra. Aí vale <b>5 pontos</b>.</span>
+      <span class="ic">⏱️</span><span>Você tem <b>20 segundos</b> por palavra. Se o tempo acabar, perde uma vida. São 3 vidas.</span>
+    </div>
+    <button class="go" id="start" type="button">Andiamo!</button>
+    <a class="alt" href="../">◀ Voltar aos jogos</a>
+  </div>
+</div>
+
+<div class="panel" id="over" hidden>
+  <div class="sheet">
+    <h2 id="oTitle">Bravo!</h2>
+    <div class="nums">
+      <div><b id="oScore">0</b><span>pontos</span></div>
+      <div><b id="oHits">0</b><span>acertos</span></div>
+      <div><b id="oBest">0</b><span>recorde</span></div>
+    </div>
+    <div class="review" id="review"><p>Para revisar</p><ul id="revList"></ul></div>
+    <button class="go" id="again" type="button">Ancora!</button>
+    <a class="alt" href="../">◀ Voltar aos jogos</a>
+  </div>
+</div>
+
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+
+/* ---------- palavras do nível 1 ---------- */
+const WORDS=[
+ ['🍎','la','mela','maçã'],['🐶','il','cane','cachorro'],['🐱','il','gatto','gato'],['🏠','la','casa','casa'],['☀️','il','sole','sol'],
+ ['🌙','la','luna','lua'],['🍞','il','pane','pão'],['💧',"l'",'acqua','água'],['🥛','il','latte','leite'],['🥚',"l'",'uovo','ovo',['uova']],
+ ['🐟','il','pesce','peixe'],['🌸','il','fiore','flor',['fiori']],['🌳',"l'",'albero','árvore'],['📖','il','libro','livro'],['🚗','la','macchina','carro',['auto','automobile']],
+ ['🚆','il','treno','trem'],['✈️',"l'",'aereo','avião',['aeroplano']],['🚲','la','bicicletta','bicicleta',['bici']],['❤️','il','cuore','coração'],['⭐','la','stella','estrela'],
+ ['🔑','la','chiave','chave'],['⌚',"l'",'orologio','relógio'],['👟','la','scarpa','sapato',['scarpe']],['🎩','il','cappello','chapéu'],['🍌','la','banana','banana'],
+ ['🍓','la','fragola','morango',['fragole']],['🧀','il','formaggio','queijo'],['🍕','la','pizza','pizza'],['🍦','il','gelato','sorvete'],['🍇',"l'",'uva','uva'],
+ ['🍋','il','limone','limão'],['🍊',"l'",'arancia','laranja'],['🍅','il','pomodoro','tomate'],['🥕','la','carota','cenoura'],['🐄','la','mucca','vaca'],
+ ['🐴','il','cavallo','cavalo'],['🐦',"l'",'uccello','pássaro',['uccellino']],['🐭','il','topo','rato',['topolino']],['🐷','il','maiale','porco',['maialino']],['🐑','la','pecora','ovelha'],
+ ['🦋','la','farfalla','borboleta'],['🛏️','il','letto','cama'],['🪑','la','sedia','cadeira'],['🚪','la','porta','porta'],['👶','il','bambino','bebê',['neonato','bimbo']],
+ ['🍝','la','pasta','macarrão',['spaghetti']],['☕','il','caffè','café'],['🌹','la','rosa','rosa'],['🐘',"l'",'elefante','elefante'],['🍷','il','vino','vinho']
+].map(([e,art,it,pt,alt])=>({e,art,it,pt,alt:alt||[]}));
+const PER_GAME=20,TIME=20,LIVES=3;
+setTimeout(()=>WORDS.forEach(w=>[w.it,...w.alt].forEach(x=>OTHER.add(core(x)))));
+const full=w=>w.art.endsWith("'")?w.art+w.it:w.art+' '+w.it;
+
+/* ---------- comparar resposta ---------- */
+const ARTS=new Set(['il','lo','la','i','gli','le','un','uno','una','l','un','e','e\'','del','della','dei','delle','di','questo','questa','e un','e una']);
+function norm(s){return String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[’`´]/g,"'").replace(/[^a-z' ]/g,' ').replace(/\b(l|un|dell|nell|all|dall)'/g,' ').replace(/'/g,' ').replace(/\s+/g,' ').trim()}
+function core(s){return norm(s).split(' ').filter(t=>t&&!ARTS.has(t)).join(' ')}
+function lev(a,b){const m=a.length,n=b.length;if(!m)return n;if(!n)return m;let p=Array.from({length:n+1},(_,j)=>j);
+  for(let i=1;i<=m;i++){const c=[i];for(let j=1;j<=n;j++)c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));p=c}return p[n]}
+function matches(heard,w){const h=core(heard);if(!h)return false;const toks=h.split(' ');
+  for(const cand of [w.it,...w.alt].map(core)){if(h===cand||toks.includes(cand))return true}
+  if(toks.some(t=>OTHER.has(t)&&!w.it.includes(t)))return false;           // é outra palavra do jogo
+  for(const cand of [w.it,...w.alt].map(core)){const tol=cand.length>=8?2:cand.length>=5?1:0;
+    if(tol&&(lev(h,cand)<=tol||toks.some(t=>t.length>=4&&lev(t,cand)<=tol)))return true}
+  return false}
+const OTHER=new Set();
+
+/* ---------- estado ---------- */
+let state='menu',deck=[],idx=0,score=0,lives=LIVES,hits=0,helped=false,timeLeft=TIME,phase='ask',missed=[],best=0,listening=false,last=0,nextT=null;
+try{best=+localStorage.getItem('italiano-l1-best')||0}catch(e){}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+
+/* ---------- voz: falar (megafone) ---------- */
+let itVoice=null;
+function pickVoice(){try{const vs=speechSynthesis.getVoices();itVoice=vs.find(v=>/^it(-|_|$)/i.test(v.lang)&&/alice|federica|luca|paola/i.test(v.name))||vs.find(v=>/^it/i.test(v.lang))||null}catch(e){}}
+if('speechSynthesis' in window){pickVoice();speechSynthesis.onvoiceschanged=pickVoice}
+function say(text){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='it-IT';if(itVoice)u.voice=itVoice;u.rate=.82;u.pitch=1;speechSynthesis.speak(u)}catch(e){}}
+
+/* ---------- sons curtos ---------- */
+let AC=null;function ac(){if(!AC){try{AC=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}}return AC}
+function tone(f,d,type='sine',v=.12,delay=0){const a=ac();if(!a)return;try{const t=a.currentTime+delay,o=a.createOscillator(),g=a.createGain();o.type=type;o.frequency.value=f;
+  g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g).connect(a.destination);o.start(t);o.stop(t+d+.02)}catch(e){}}
+const sRight=()=>{tone(784,.12,'triangle');tone(1175,.2,'triangle',.12,.1)};
+const sWrong=()=>{tone(220,.18,'square',.06);tone(180,.22,'square',.05,.12)};
+
+/* ---------- voz: ouvir o jogador (microfone) ---------- */
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;let rec=null,heardFinal='';
+function setupRec(){if(!SR)return null;const r=new SR();r.lang='it-IT';r.interimResults=true;r.maxAlternatives=5;r.continuous=false;
+  r.onresult=e=>{if(phase!=='ask')return;let shown='';
+    for(let i=e.resultIndex;i<e.results.length;i++){const res=e.results[i];shown=res[0].transcript;
+      for(let k=0;k<res.length;k++){if(matches(res[k].transcript,deck[idx])){heardShow(res[k].transcript);try{r.stop()}catch(_){}right();return}}
+      if(res.isFinal)heardFinal=res[0].transcript}
+    heardShow(shown)};
+  r.onerror=e=>{listening=false;micUI();if(e.error==='not-allowed'||e.error==='service-not-allowed'){$('note').textContent='O microfone foi bloqueado. Libere o microfone para este site ou use Digitar.';showType(true)}
+    else if(e.error==='no-speech'){$('note').textContent='Não ouvi nada. Toque no microfone e fale perto do celular.'}};
+  r.onend=()=>{listening=false;micUI();if(phase==='ask'&&heardFinal&&!matches(heardFinal,deck[idx]))wrongTry();heardFinal=''};
+  return r}
+function micUI(){$('mic').classList.toggle('on',listening);$('micTxt').textContent=listening?'Ouvindo…':'Falar'}
+function heardShow(t){$('heard').innerHTML='Ouvi: <b></b>';$('heard').querySelector('b').textContent='“'+t.trim()+'”'}
+$('mic').addEventListener('click',()=>{ac();if(state!=='play'||phase!=='ask')return;
+  if(!SR){showType(true);return}
+  if(listening){try{rec.stop()}catch(_){}return}
+  try{speechSynthesis.cancel()}catch(e){}
+  rec=rec||setupRec();heardFinal='';try{rec.start();listening=true;micUI();$('note').textContent=''}catch(e){try{rec.abort()}catch(_){}rec=setupRec();try{rec.start();listening=true;micUI()}catch(_){}}});
+
+/* ---------- digitar ---------- */
+function showType(on){$('typeForm').hidden=!on;$('kbSub').textContent=on?'aberto':'se preferir';if(on)setTimeout(()=>$('typeIn').focus(),50)}
+$('kb').addEventListener('click',()=>showType($('typeForm').hidden));
+$('typeForm').addEventListener('submit',e=>{e.preventDefault();if(phase!=='ask')return;const v=$('typeIn').value;if(!v.trim())return;heardShow(v);
+  if(matches(v,deck[idx]))right();else{wrongTry();$('typeIn').select()}});
+
+/* ---------- megafone ---------- */
+$('hear').addEventListener('click',()=>{if(state!=='play'||phase!=='ask')return;if(listening){try{rec.stop()}catch(_){}}
+  helped=true;$('hear').classList.add('used');$('badge').hidden=false;say(deck[idx].it)});
+
+/* ---------- rodada ---------- */
+function hearts(){$('hearts').textContent='❤️'.repeat(lives)+'🤍'.repeat(LIVES-lives)}
+function hud(){$('pts').innerHTML=score+'<small>pts</small>';hearts();$('count').textContent='Palavra '+Math.min(idx+1,deck.length)+' de '+deck.length}
+function show(){const w=deck[idx];phase='ask';helped=false;timeLeft=TIME;
+  $('pic').textContent=w.e;$('pic').classList.remove('pop','shake');void $('pic').offsetWidth;$('pic').classList.add('pop');
+  $('ask').hidden=false;$('answer').hidden=true;$('ptxt').hidden=true;$('heard').textContent='';$('badge').hidden=true;$('hear').classList.remove('used');
+  $('typeIn').value='';$('mic').disabled=false;hud()}
+function reveal(ok){const w=deck[idx];$('ask').hidden=true;$('answer').hidden=false;$('answer').textContent=full(w);$('answer').className='answer '+(ok?'ok':'no');
+  $('ptxt').hidden=false;$('ptxt').textContent=w.pt;$('mic').disabled=true}
+function right(){if(phase!=='ask')return;phase='done';const pts=helped?5:10;score+=pts;hits++;sRight();reveal(true);
+  $('heard').textContent=(helped?'Bene! +5':'Perfetto! +10');$('pic').classList.remove('pop');void $('pic').offsetWidth;$('pic').classList.add('pop');hud();
+  nextT=setTimeout(next,1500)}
+function wrongTry(){if(phase!=='ask')return;sWrong();$('pic').classList.remove('shake','pop');void $('pic').offsetWidth;$('pic').classList.add('shake');
+  const h=$('heard');if(!h.textContent)h.textContent='Não foi dessa vez.';h.insertAdjacentText('beforeend','  · tente de novo')}
+function timeout(){if(phase!=='ask')return;phase='done';if(listening){try{rec.abort()}catch(_){}}lives--;missed.push(deck[idx]);sWrong();reveal(false);
+  $('heard').textContent='Acabou o tempo!';say(deck[idx].it);hud();nextT=setTimeout(next,2400)}
+function next(){idx++;if(lives<=0||idx>=deck.length){end();return}show()}
+
+/* ---------- fluxo ---------- */
+function begin(){ac();try{AC&&AC.resume()}catch(e){};clearTimeout(nextT);deck=shuffle(WORDS.slice()).slice(0,PER_GAME);idx=0;score=0;lives=LIVES;hits=0;missed=[];
+  state='play';$('menu').hidden=true;$('over').hidden=true;$('note').textContent=SR?'':'Este navegador não reconhece voz. Digite a palavra.';showType(!SR);show();
+  try{const u=new SpeechSynthesisUtterance('');speechSynthesis.speak(u)}catch(e){} /* destrava a voz no iPhone */}
+$('start').addEventListener('click',begin);$('again').addEventListener('click',begin);
+function end(){state='over';phase='done';if(listening){try{rec.abort()}catch(_){}}const nb=score>best;if(nb){best=score;try{localStorage.setItem('italiano-l1-best',best)}catch(e){}}
+  $('oTitle').textContent=lives<=0?'Peccato! Acabaram as vidas':(nb&&score>0?'Bravissimo! Recorde!':'Bravo!');$('oScore').textContent=score;$('oHits').textContent=hits+'/'+idx;$('oBest').textContent=best;
+  const ul=$('revList');ul.innerHTML='';$('review').hidden=!missed.length;
+  missed.forEach(w=>{const li=document.createElement('li');const e=document.createElement('span');e.className='e';e.textContent=w.e;const t=document.createElement('span');t.textContent=full(w);
+    const b=document.createElement('button');b.type='button';b.textContent='📢';b.setAttribute('aria-label','Ouvir '+w.it);b.addEventListener('click',()=>say(w.it));li.append(e,t,b);ul.append(li)});
+  setTimeout(()=>{$('over').hidden=false},500)}
+
+/* ---------- relógio ---------- */
+function tick(now){const dt=Math.min(.1,(now-(last||now))/1000);last=now;
+  if(state==='play'&&phase==='ask'&&!document.hidden){timeLeft-=dt;if(timeLeft<=0){timeLeft=0;timeout()}}
+  const k=Math.max(0,timeLeft/TIME),bar=$('bar');bar.style.transform='scaleX('+k+')';bar.style.background=k<.25?'var(--rosso)':k<.5?'var(--gold)':'var(--verde)';
+  requestAnimationFrame(tick)}
+requestAnimationFrame(tick);
+hud();
+window.__ita={type:v=>{$('typeIn').value=v;$('typeForm').requestSubmit()},st:()=>({state,phase,idx,score,lives,hits,word:deck[idx]&&deck[idx].it}),matches,WORDS};
+if('serviceWorker' in navigator){addEventListener('load',()=>{navigator.serviceWorker.register('../sw.js',{scope:'../'}).catch(()=>{})})}
+})();
+</script>
+</body>
+</html>
