@@ -208,20 +208,30 @@ function norm(s){return String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ
 function core(s){return norm(s).split(' ').filter(t=>t&&!ARTS.has(t)).join(' ')}
 function lev(a,b){const m=a.length,n=b.length;if(!m)return n;if(!n)return m;let p=Array.from({length:n+1},(_,j)=>j);
   for(let i=1;i<=m;i++){const c=[i];for(let j=1;j<=n;j++)c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));p=c}return p[n]}
+// chave sonora: o que importa é como soa, não como foi escrito (cane = kane, macchina = machina, gelato = gelatto)
+function pkey(t){return t.replace(/gli/g,'li').replace(/gn/g,'n').replace(/h/g,'').replace(/[cqk]/g,'k').replace(/z/g,'s').replace(/y/g,'i').replace(/w/g,'v').replace(/([a-z])\1+/g,'$1')}
+const tolOf=k=>k.length>=7?2:k.length>=4?1:0;
 function matches(heard,w){const h=core(heard);if(!h)return false;const toks=h.split(' ');
-  for(const cand of [w.it,...w.alt].map(core)){if(h===cand||toks.includes(cand))return true}
-  if(toks.some(t=>OTHER.has(t)&&!w.it.includes(t)))return false;           // é outra palavra do jogo
-  for(const cand of [w.it,...w.alt].map(core)){const tol=cand.length>=8?2:cand.length>=5?1:0;
-    if(tol&&(lev(h,cand)<=tol||toks.some(t=>t.length>=4&&lev(t,cand)<=tol)))return true}
+  const cands=[w.it,...w.alt].map(core);
+  for(const cand of cands){if(h===cand||toks.includes(cand))return true}
+  if(toks.some(t=>OTHER.has(t)&&!cands.some(c=>c.includes(t))))return false;  // disse outra palavra do jogo
+  const keys=toks.map(pkey),joined=pkey(toks.join(''));
+  for(const cand of cands){const ck=pkey(cand.replace(/ /g,'')),tol=tolOf(ck);
+    if(keys.includes(ck)||joined===ck||joined.includes(ck))return true;
+    if(tol&&(keys.some(k=>k.length>=3&&lev(k,ck)<=tol)||lev(joined,ck)<=tol))return true}
   return false}
 const OTHER=new Set();
 function digits(s){return String(s).replace(/\b(10|[2-9])\b/g,d=>' '+NUM[d]+' ')}
 function check2(heard,w){ // devolve {ok, hint}
-  const toks=core(digits(heard)).split(' ').filter(Boolean);
-  const numOk=toks.some(t=>t===w.num||(w.num.length>=5&&lev(t,w.num)<=1&&!NUMW.includes(t)));
-  const tol=w.pl.length>=7?1:0;
-  const plOk=toks.some(t=>t!==w.sg&&(t===w.pl||(tol&&lev(t,w.pl)<=tol)));
-  const sgUsed=toks.includes(w.sg);
+  const toks=core(digits(heard)).split(' ').filter(Boolean);const keys=toks.map(pkey);
+  const nk=pkey(w.num),pk=pkey(w.pl),sk=pkey(w.sg),last=w.pl.slice(-1);
+  const numIs=k=>k===nk||(nk.length>=5&&lev(k,nk)<=1&&!NUMW.some(n=>n!==w.num&&pkey(n)===k));
+  // plural: mesmo final (letti, não letto) e o resto parecido
+  const stemTol=pk.length>=6?1:0,plIs=k=>k!==sk&&k.slice(-1)===last&&lev(k.slice(0,-1),pk.slice(0,-1))<=stemTol;
+  let numOk=keys.some(numIs),plOk=keys.some(plIs);
+  if(!(numOk&&plOk)){const j=pkey(toks.join(''));const at=j.indexOf(nk);         // "trelletti" tudo junto
+    if(at>=0){const rest=j.slice(at+nk.length);if(rest&&plIs(rest)){numOk=true;plOk=true}}}
+  const sgUsed=keys.some(k=>k.slice(-1)!==last&&lev(k.slice(0,-1),sk.slice(0,-1))<=stemTol);
   if(numOk&&plOk)return{ok:true};
   if(numOk&&sgUsed)return{ok:false,hint:'Quase! Agora no plural.'};
   if(plOk)return{ok:false,hint:'Confira quantos são.'};
@@ -265,23 +275,34 @@ const sWrong=()=>{tone(220,.18,'square',.06);tone(180,.22,'square',.05,.12)};
 
 /* ---------- voz: ouvir o jogador (microfone) ---------- */
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;let rec=null,heardFinal='';
-function setupRec(){if(!SR)return null;const r=new SR();r.lang='it-IT';r.interimResults=true;r.maxAlternatives=5;r.continuous=false;
-  r.onresult=e=>{if(phase!=='ask')return;let shown='';
-    for(let i=e.resultIndex;i<e.results.length;i++){const res=e.results[i];shown=res[0].transcript;
-      for(let k=0;k<res.length;k++){if(isRight(res[k].transcript,deck[idx])){heardShow(res[k].transcript);try{r.stop()}catch(_){}right();return}}
-      if(res.isFinal)heardFinal=res[0].transcript}
-    heardShow(shown)};
+let recStop=null;
+function setupRec(){if(!SR)return null;const r=new SR();r.lang='it-IT';r.interimResults=true;r.maxAlternatives=5;r.continuous=true;
+  r.onresult=e=>{if(phase!=='ask')return;
+    // confere tudo o que já foi ouvido (parcial ou final) — acertou, para na hora
+    const all=[];for(let i=0;i<e.results.length;i++){const res=e.results[i];for(let k=0;k<res.length;k++)all.push(res[k].transcript)}
+    const tail=[];for(let i=Math.max(0,e.results.length-2);i<e.results.length;i++)tail.push(e.results[i][0].transcript);all.push(tail.join(' '));
+    for(const t of all){if(isRight(t,deck[idx])){heardShow(t);stopRec();right();return}}
+    const res=e.results[e.results.length-1];
+    if(res.isFinal){heardFinal=res[0].transcript;heardShow(heardFinal);hintFor(heardFinal);sWrong()}   // errou: mostra só o resultado final e segue ouvindo
+  };
   r.onerror=e=>{listening=false;micUI();if(e.error==='not-allowed'||e.error==='service-not-allowed'){$('note').textContent='O microfone foi bloqueado. Libere o microfone para este site ou use Digitar.';showType(true)}
     else if(e.error==='no-speech'){$('note').textContent='Não ouvi nada. Toque no microfone e fale perto do celular.'}};
-  r.onend=()=>{listening=false;micUI();if(phase==='ask'&&heardFinal&&!isRight(heardFinal,deck[idx]))wrongTry(heardFinal);heardFinal=''};
+  r.onend=()=>{const was=listening;listening=false;clearTimeout(recStop);micUI();
+    if(was&&phase==='ask'&&heardFinal&&!isRight(heardFinal,deck[idx]))wrongTry(heardFinal);
+    else if(was&&phase==='ask'&&!heardFinal)$('heard').textContent='Toque no microfone e fale de novo.';heardFinal=''};
   return r}
-function micUI(){$('mic').classList.toggle('on',listening);$('micTxt').textContent=listening?'Ouvindo…':'Falar'}
+function stopRec(){clearTimeout(recStop);try{rec&&rec.stop()}catch(_){}}
+function hintFor(said){const h=deck[idx].lvl===2?check2(said,deck[idx]).hint:'';$('heard').insertAdjacentText('beforeend','  · '+(h||'tente de novo'))}
+function micUI(){$('mic').classList.toggle('on',listening);$('micTxt').textContent=listening?'Parar':'Falar';
+  if(listening&&phase==='ask'){$('heard').textContent='🎙️ Ouvindo… fale agora'}}
 function heardShow(t){$('heard').innerHTML='Ouvi: <b></b>';$('heard').querySelector('b').textContent='“'+t.trim()+'”'}
 $('mic').addEventListener('click',()=>{ac();unlockAudio();if(state!=='play'||phase!=='ask')return;
   if(!SR){showType(true);return}
-  if(listening){try{rec.stop()}catch(_){}return}
+  if(listening){stopRec();return}
   try{player.pause();speechSynthesis.cancel()}catch(e){}
-  rec=rec||setupRec();heardFinal='';try{rec.start();listening=true;micUI();$('note').textContent=''}catch(e){try{rec.abort()}catch(_){}rec=setupRec();try{rec.start();listening=true;micUI()}catch(_){}}});
+  rec=rec||setupRec();heardFinal='';
+  const go=()=>{rec.start();listening=true;micUI();$('note').textContent='';clearTimeout(recStop);recStop=setTimeout(stopRec,9000)};
+  try{go()}catch(e){try{rec.abort()}catch(_){}rec=setupRec();try{go()}catch(_){}}});
 
 /* ---------- digitar ---------- */
 function showType(on){$('typeForm').hidden=!on;$('kbSub').textContent=on?'aberto':'se preferir';if(on)setTimeout(()=>$('typeIn').focus(),50)}
