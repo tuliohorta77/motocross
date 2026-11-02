@@ -330,8 +330,10 @@ const sWrong=()=>{tone(220,.18,'square',.06);tone(180,.22,'square',.05,.12)};
 /* ---------- voz: ouvir o jogador (microfone) ---------- */
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;let rec=null,heardFinal='';
 let recStop=null;
-function setupRec(){if(!SR)return null;const r=new SR();r.lang='it-IT';r.interimResults=true;r.maxAlternatives=5;r.continuous=true;
-  r.onresult=e=>{if(phase!=='ask')return;
+let gotSomething=false,watchdog=null,retried=false;
+function setupRec(cont=true){if(!SR)return null;const r=new SR();r.lang='it-IT';r.interimResults=true;r.maxAlternatives=5;r.continuous=cont;
+  r.onaudiostart=()=>{gotSomething=true};r.onspeechstart=()=>{gotSomething=true};
+  r.onresult=e=>{if(r!==rec)return;gotSomething=true;if(phase!=='ask')return;
     // confere tudo o que já foi ouvido (parcial ou final) — acertou, para na hora
     const all=[];for(let i=0;i<e.results.length;i++){const res=e.results[i];for(let k=0;k<res.length;k++)all.push(res[k].transcript)}
     const tail=[];for(let i=Math.max(0,e.results.length-2);i<e.results.length;i++)tail.push(e.results[i][0].transcript);all.push(tail.join(' '));
@@ -339,13 +341,25 @@ function setupRec(){if(!SR)return null;const r=new SR();r.lang='it-IT';r.interim
     const res=e.results[e.results.length-1];
     if(res.isFinal){heardFinal=res[0].transcript;heardShow(heardFinal);hintFor(heardFinal);sWrong()}   // errou: mostra só o resultado final e segue ouvindo
   };
-  r.onerror=e=>{listening=false;micUI();if(e.error==='not-allowed'||e.error==='service-not-allowed'){$('note').textContent='O microfone foi bloqueado. Libere o microfone para este site ou use Digitar.';showType(true)}
-    else if(e.error==='no-speech'){$('note').textContent='Não ouvi nada. Toque no microfone e fale perto do celular.'}};
-  r.onend=()=>{const was=listening;listening=false;clearTimeout(recStop);micUI();
+  r.onerror=e=>{if(r!==rec)return;listening=false;clearTimeout(watchdog);micUI();const m={
+      'not-allowed':'O microfone foi bloqueado. Libere o microfone para este site (Ajustes › Safari › Microfone) ou use Digitar.',
+      'service-not-allowed':'O reconhecimento de voz está desligado. Ative o Ditado em Ajustes › Geral › Teclado, ou use Digitar.',
+      'no-speech':'Não ouvi nada. Toque no microfone e fale perto do celular.',
+      'audio-capture':'O microfone está ocupado por outro app. Feche-o e tente de novo.',
+      'network':'O reconhecimento de voz precisa de internet. Confira a conexão.'}[e.error];
+    if(e.error!=='aborted')$('note').textContent=m||('Microfone com problema ('+e.error+'). Toque de novo ou use Digitar.');
+    if(e.error==='not-allowed'||e.error==='service-not-allowed')showType(true)};
+  r.onend=()=>{if(r!==rec)return;const was=listening;listening=false;clearTimeout(recStop);clearTimeout(watchdog);micUI();
     if(was&&phase==='ask'&&heardFinal&&!isRight(heardFinal,deck[idx]))wrongTry(heardFinal);
     else if(was&&phase==='ask'&&!heardFinal)$('heard').textContent='Toque no microfone e fale de novo.';heardFinal=''};
   return r}
-function stopRec(){clearTimeout(recStop);try{rec&&rec.stop()}catch(_){}}
+function stopRec(){clearTimeout(recStop);clearTimeout(watchdog);try{rec&&rec.stop()}catch(_){}}
+function killRec(){clearTimeout(recStop);clearTimeout(watchdog);if(!rec)return;const r=rec;rec=null;try{r.onresult=r.onend=r.onerror=null;r.abort()}catch(_){}}
+function startRec(cont){killRec();rec=setupRec(cont);heardFinal='';gotSomething=false;
+  try{rec.start()}catch(e){$('note').textContent='Não consegui ligar o microfone. Toque de novo.';return}
+  listening=true;micUI();$('note').textContent='';recStop=setTimeout(stopRec,9000);
+  // se o iPhone não começar a ouvir em 3,5 s, tenta de novo no modo simples
+  watchdog=setTimeout(()=>{if(listening&&!gotSomething&&!retried){retried=true;startRec(false)}},3500)}
 function hintFor(said){const w=deck[idx],h=w.lvl==='n'?checkN(said,w).hint:w.lvl===3?check3(said,w).hint:w.lvl===2?check2(said,w).hint:'';$('heard').insertAdjacentText('beforeend','  · '+(h||'tente de novo'))}
 function micUI(){$('mic').classList.toggle('on',listening);$('micTxt').textContent=listening?'Parar':'Falar';
   if(listening&&phase==='ask'){$('heard').textContent='🎙️ Ouvindo… fale agora'}}
@@ -354,9 +368,7 @@ $('mic').addEventListener('click',()=>{ac();unlockAudio();if(state!=='play'||pha
   if(!SR){showType(true);return}
   if(listening){stopRec();return}
   try{player.pause();speechSynthesis.cancel()}catch(e){}
-  rec=rec||setupRec();heardFinal='';
-  const go=()=>{rec.start();listening=true;micUI();$('note').textContent='';clearTimeout(recStop);recStop=setTimeout(stopRec,9000)};
-  try{go()}catch(e){try{rec.abort()}catch(_){}rec=setupRec();try{go()}catch(_){}}});
+  retried=false;startRec(true)});
 
 /* ---------- digitar ---------- */
 function showType(on){$('typeForm').hidden=!on;$('kbSub').textContent=on?'aberto':'se preferir';if(on)setTimeout(()=>$('typeIn').focus(),50)}
@@ -365,7 +377,7 @@ $('typeForm').addEventListener('submit',e=>{e.preventDefault();if(phase!=='ask')
   if(isRight(v,deck[idx]))right();else{wrongTry(v);$('typeIn').select()}});
 
 /* ---------- megafone ---------- */
-$('hear').addEventListener('click',()=>{if(state!=='play'||phase!=='ask')return;if(listening){try{rec.stop()}catch(_){}}
+$('hear').addEventListener('click',()=>{if(state!=='play'||phase!=='ask')return;if(listening||rec){killRec();listening=false;micUI()}
   unlockAudio();helped=true;$('hear').classList.add('used');$('badge').hidden=false;say(deck[idx])});
 
 /* ---------- rodada ---------- */
@@ -407,7 +419,7 @@ function right(){if(phase!=='ask')return;phase='done';const pts=helped?5:10;scor
 function wrongTry(said){if(phase!=='ask')return;sWrong();$('pic').classList.remove('shake','pop');void $('pic').offsetWidth;$('pic').classList.add('shake');
   const h=$('heard');if(!h.textContent)h.textContent='Não foi dessa vez.';
   const w=deck[idx],hint=!said?'':w.lvl==='n'?checkN(said,w).hint:w.lvl===3?check3(said,w).hint:w.lvl===2?check2(said,w).hint:'';h.insertAdjacentText('beforeend','  · '+(hint||'tente de novo'))}
-function timeout(){if(phase!=='ask')return;phase='done';if(listening){try{rec.abort()}catch(_){}}lives--;missed.push(deck[idx]);sWrong();reveal(false);
+function timeout(){if(phase!=='ask')return;phase='done';if(listening||rec){killRec();listening=false;micUI()}lives--;missed.push(deck[idx]);sWrong();reveal(false);
   $('heard').textContent='Acabou o tempo!';say(deck[idx]);hud();nextT=setTimeout(next,2400)}
 function next(){idx++;if(lives<=0||idx>=deck.length){end();return}show()}
 
@@ -423,7 +435,7 @@ try{if(!localStorage.getItem('italiano-migr')){const a=localStorage.getItem('ita
   if(a)localStorage.setItem('italiano-f1-best',a);if(b)localStorage.setItem('italiano-f3-best',b);localStorage.setItem('italiano-migr','1')}}catch(e){}
 function showRecs(){[1,2,3,4,5].forEach(l=>$('rec'+l).textContent=bestOf(l))}
 showRecs();
-function end(){state='over';phase='done';if(listening){try{rec.abort()}catch(_){}}const nb=score>best;if(nb){best=score;try{localStorage.setItem('italiano-f'+level+'-best',best)}catch(e){}}
+function end(){state='over';phase='done';if(listening||rec){killRec();listening=false;micUI()}const nb=score>best;if(nb){best=score;try{localStorage.setItem('italiano-f'+level+'-best',best)}catch(e){}}
   $('oTitle').textContent=lives<=0?'Peccato! Acabaram as vidas':(nb&&score>0?'Bravissimo! Recorde!':'Bravo!');$('oScore').textContent=score;$('oHits').textContent=hits+'/'+idx;$('oBest').textContent=best;
   const ul=$('revList');ul.innerHTML='';$('review').hidden=!missed.length;
   missed.forEach(w=>{const li=document.createElement('li');const e=document.createElement('span');e.className='e';if(w.lvl==='n'){e.textContent=w.n;e.style.fontFamily='var(--display)'}else if(w.lvl==='c'){e.style.cssText='display:inline-block;width:24px;height:24px;border-radius:50%;border:2px solid rgba(0,0,0,.2);background:'+w.hex}else if(w.lvl===3){const c=tintedCopy(w.e,w.hex);c.style.cssText='width:26px;height:26px;vertical-align:middle';if(w.n>1)e.append(w.n+'×');e.append(c)}else e.textContent=w.lvl===2?w.n+'×'+w.e:w.e;const t=document.createElement('span');t.textContent=full(w);
