@@ -113,7 +113,7 @@ footer{font-size:15px;color:var(--muted)}
       <div class="info">
         <span class="tag">IDIOMAS · FALE EM VOZ ALTA</span>
         <h2>Parla Italiano</h2>
-        <p>Fale em italiano em 10 fases: objetos, números, cores, comidas, família, verbos e “onde está”, como “il gatto è fuori dalla scatola”.</p>
+        <p>Fale em italiano em 10 fases (objetos, números, cores, comidas, família, verbos, “onde está”) e treine o ouvido no Modo Escuta.</p>
         <div class="row"><span class="best">RECORDE <b id="b6">0</b></span><span class="play">JOGAR</span></div>
       </div>
     </a>
@@ -126,7 +126,7 @@ footer{font-size:15px;color:var(--muted)}
   <footer>Dica: no iPhone, Compartilhar → Adicionar à Tela de Início para jogar em tela cheia, até sem internet.</footer>
 </div>
 <script>
-try{document.getElementById('b1').textContent=localStorage.getItem('mx-deserto-best')||0;document.getElementById('b2').textContent=localStorage.getItem('estrada-best')||0;document.getElementById('b3').textContent=localStorage.getItem('patinhos-best')||0;document.getElementById('b4').textContent=localStorage.getItem('argola-best')||0;document.getElementById('b5').textContent=localStorage.getItem('penalti-best')||0;document.getElementById('b6').textContent=Math.max(0,...[1,2,3,4,5,6,7,8,9,10].map(l=>+localStorage.getItem('italiano-f'+l+'-best')||0),+localStorage.getItem('italiano-l1-best')||0)}catch(e){}
+try{document.getElementById('b1').textContent=localStorage.getItem('mx-deserto-best')||0;document.getElementById('b2').textContent=localStorage.getItem('estrada-best')||0;document.getElementById('b3').textContent=localStorage.getItem('patinhos-best')||0;document.getElementById('b4').textContent=localStorage.getItem('argola-best')||0;document.getElementById('b5').textContent=localStorage.getItem('penalti-best')||0;document.getElementById('b6').textContent=Math.max(0,...[1,2,3,4,5,6,7,8,9,10,11].map(l=>+localStorage.getItem('italiano-f'+l+'-best')||0),+localStorage.getItem('italiano-l1-best')||0)}catch(e){}
 if('serviceWorker' in navigator){addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})})}
 </script>
 </body>
