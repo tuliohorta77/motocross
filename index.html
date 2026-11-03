@@ -63,6 +63,15 @@ footer{font-size:15px;color:var(--muted)}
   </header>
 
   <main class="grid">
+    <a class="gamecard" href="italiano/">
+      <img class="thumb" src="italiano/thumb.png" alt="Figura de uma fruta com a palavra em italiano embaixo">
+      <div class="info">
+        <span class="tag">IDIOMAS · FALE EM VOZ ALTA</span>
+        <h2>Parla Italiano</h2>
+        <p>Fase A1 com 20 lições faladas e avaliação do seu nível. A2, B1 e B2 chegando.</p>
+        <div class="row"><span class="best">RECORDE <b id="b6">0</b></span><span class="play">JOGAR</span></div>
+      </div>
+    </a>
     <a class="gamecard" href="deserto/">
       <img class="thumb" src="deserto/thumb.png" alt="Moto saltando uma rampa no deserto ao pôr do sol">
       <div class="info">
@@ -108,15 +117,6 @@ footer{font-size:15px;color:var(--muted)}
         <div class="row"><span class="best">RECORDE <b id="b5">0</b></span><span class="play">JOGAR</span></div>
       </div>
     </a>
-    <a class="gamecard" href="italiano/">
-      <img class="thumb" src="italiano/thumb.png" alt="Figura de uma fruta com a palavra em italiano embaixo">
-      <div class="info">
-        <span class="tag">IDIOMAS · FALE EM VOZ ALTA</span>
-        <h2>Parla Italiano</h2>
-        <p>17 fases faladas — de “la mela” até pedir no restaurante — com escuta misturada e o painel “Meu nível” do A1.</p>
-        <div class="row"><span class="best">RECORDE <b id="b6">0</b></span><span class="play">JOGAR</span></div>
-      </div>
-    </a>
     <div class="gamecard soon">
       <span class="tag">EM BREVE</span>
       <p>Mais jogos chegando nesta tela.</p>
@@ -126,7 +126,7 @@ footer{font-size:15px;color:var(--muted)}
   <footer>Dica: no iPhone, Compartilhar → Adicionar à Tela de Início para jogar em tela cheia, até sem internet.</footer>
 </div>
 <script>
-try{document.getElementById('b1').textContent=localStorage.getItem('mx-deserto-best')||0;document.getElementById('b2').textContent=localStorage.getItem('estrada-best')||0;document.getElementById('b3').textContent=localStorage.getItem('patinhos-best')||0;document.getElementById('b4').textContent=localStorage.getItem('argola-best')||0;document.getElementById('b5').textContent=localStorage.getItem('penalti-best')||0;document.getElementById('b6').textContent=Math.max(0,...[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,99].map(l=>+localStorage.getItem('italiano-f'+l+'-best')||0),+localStorage.getItem('italiano-l1-best')||0)}catch(e){}
+try{document.getElementById('b1').textContent=localStorage.getItem('mx-deserto-best')||0;document.getElementById('b2').textContent=localStorage.getItem('estrada-best')||0;document.getElementById('b3').textContent=localStorage.getItem('patinhos-best')||0;document.getElementById('b4').textContent=localStorage.getItem('argola-best')||0;document.getElementById('b5').textContent=localStorage.getItem('penalti-best')||0;document.getElementById('b6').textContent=Math.max(0,...[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,99].map(l=>+localStorage.getItem('italiano-f'+l+'-best')||0),+localStorage.getItem('italiano-l1-best')||0)}catch(e){}
 if('serviceWorker' in navigator){addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})})}
 </script>
 </body>
