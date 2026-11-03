@@ -377,6 +377,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
 <script>
 (()=>{
 const $=id=>document.getElementById(id);
+const emit=(type,d)=>{try{dispatchEvent(new CustomEvent('parla',{detail:{type,level,...d}}))}catch(e){}};let t0=0,nHelp=0,nRetry=0;
 
 /* ---------- palavras do nível 1 ---------- */
 const WORDS=[
@@ -875,13 +876,13 @@ function show(){const w=deck[idx];phase='ask';helped=false;tried=false;
     $('kb').disabled=!w.write&&!!SR;if(w.write){if(listening||rec){killRec();listening=false;micUI()}$('mic').disabled=true;showType(true)}else showType(!SR)}else $('kb').disabled=false}
 function reveal(ok){const w=deck[idx];$('cap').hidden=true;$('ask').hidden=true;$('answer').hidden=false;$('answer').textContent=(w.lvl===13||w.lvl===17)&&ok&&lastSaid?'“'+lastSaid+'”':full(w);$('answer').className='answer '+(ok?'ok':'no');
   $('ptxt').hidden=false;$('ptxt').textContent=(w.lvl===13||w.lvl===17)?(ok?'Exemplo: '+w.it:w.pt):w.pt;$('mic').disabled=true}
-function right(){if(phase!=='ask')return;phase='done';if(deck[idx].lvl===16&&!deck[idx].listen&&level!==50)deck.splice(idx+1,0,follow16(deck[idx]));const pts=helped?2:tried?5:10;res[idx]=pts;score+=pts;hits++;sRight();reveal(true);
+function right(){if(phase!=='ask')return;phase='done';if(deck[idx].lvl===16&&!deck[idx].listen&&level!==50)deck.splice(idx+1,0,follow16(deck[idx]));const pts=helped?2:tried?5:10;res[idx]=pts;score+=pts;if(helped)nHelp++;if(tried)nRetry++;emit('ans',{it:deck[idx].it,ok:true,helped,tried});hits++;sRight();reveal(true);
   $('heard').textContent=(helped?'Bene! +2':tried?'Giusto! +5 (2ª tentativa)':'Perfetto! +10');$('pic').classList.remove('pop');void $('pic').offsetWidth;$('pic').classList.add('pop');hud();
   nextT=setTimeout(next,1500)}
 function wrongTry(said){if(phase!=='ask')return;tried=true;sWrong();$('pic').classList.remove('shake','pop');void $('pic').offsetWidth;$('pic').classList.add('shake');
   const h=$('heard');if(!h.textContent)h.textContent='Não foi dessa vez.';
   const w=deck[idx],hint=!said?'':(w.lvl===21||w.lvl===22||w.lvl===23)?checkPP(said,w).hint:w.lvl===20?check20(said,w).hint:w.lvl===19?check19(said,w).hint:w.lvl===18?check18(said,w).hint:w.lvl===17?check17(said,w).hint:w.lvl===15?check15(said,w).hint:w.lvl===14?check14(said,w).hint:w.lvl===13?checkQ(said,w).hint:w.lvl===12?checkA(said,w).hint:w.lvl===8?checkV(said,w).hint:w.lvl===9?checkW(said,w).hint:w.lvl===10?checkX(said,w).hint:w.lvl==='n'?checkN(said,w).hint:w.lvl===3?check3(said,w).hint:w.lvl===2?check2(said,w).hint:'';h.insertAdjacentText('beforeend','  · '+(level===50?'tente de novo':hint||'tente de novo'))}
-function timeout(){if(phase!=='ask')return;phase='done';res[idx]=0;if(listening||rec){killRec();listening=false;micUI()}lives--;missed.push(deck[idx]);sWrong();reveal(false);if(deck[idx].listen)markOpts();
+function timeout(){if(phase!=='ask')return;phase='done';res[idx]=0;emit('ans',{it:deck[idx].it,ok:false,timeout:true,helped});if(listening||rec){killRec();listening=false;micUI()}lives--;missed.push(deck[idx]);sWrong();reveal(false);if(deck[idx].listen)markOpts();
   $('heard').textContent='Acabou o tempo!';if(!deck[idx].read&&!deck[idx].write)say(deck[idx]);hud();nextT=setTimeout(next,2400)}
 function next(){idx++;if((lives<=0&&level!==50)||idx>=deck.length){end();return}show()}
 
@@ -937,14 +938,14 @@ function fitOpts(){requestAnimationFrame(()=>[...document.querySelectorAll('.opt
 function markOpts(){[...$('opts').children].forEach((b,i)=>{const ch=deck[idx].choices[i];if(ch.it===deck[idx].it)b.classList.add('ok');else if(!b.classList.contains('bad'))b.classList.add('dim')})}
 function playIt(){const r=$('replay');r.classList.add('playing');say(deck[idx]);setTimeout(()=>r.classList.remove('playing'),1400)}
 $('replay').addEventListener('click',()=>{if(state!=='play')return;const w=deck[idx];if(w.qaudio&&!w.listen)say({...w,audio:w.qaudio,it:w.q},autoListen);else playIt()});
-function choose(b,ch){if(phase!=='ask'||state!=='play')return;phase='done';const ok=ch.it===deck[idx].it;res[idx]=ok?10:0;
+function choose(b,ch){if(phase!=='ask'||state!=='play')return;phase='done';const ok=ch.it===deck[idx].it;res[idx]=ok?10:0;emit('ans',{it:deck[idx].it,ok,listen:true,read:!!deck[idx].read});
   if(!deck[idx].read)try{localStorage.setItem('italiano-ouv-tot',(+localStorage.getItem('italiano-ouv-tot')||0)+1);if(ok)localStorage.setItem('italiano-ouv-ok',(+localStorage.getItem('italiano-ouv-ok')||0)+1)}catch(e){}
   if(ok){score+=10;hits++;sRight();$('heard').textContent='Perfetto! +10'}else{b.classList.add('bad');lives--;missed.push(deck[idx]);sWrong();$('heard').textContent='Era esta:'}
   markOpts();reveal(ok);hud();nextT=setTimeout(next,ok?1500:2600)}
 
 /* ---------- fluxo ---------- */
 function begin(){ac();try{AC&&AC.resume()}catch(e){};clearTimeout(nextT);TIME=({1:20,2:15,3:25,4:15,5:30,6:20,7:20,8:25,9:15,10:30,11:20,12:20,13:35,14:25,15:20,16:25,17:35,18:20,19:20,20:25,21:25,22:25,23:25,24:40,50:30,99:15})[level];best=bestOf(level);$('lvlChip').textContent=level===99?'Escuta':level===50?'Teste A1':level>=21?'A2 · Lição '+(level-20):'Fase '+level;document.body.classList.toggle('exam',level===50);
-  deck=level===24?deck24():level===23?deckPP(V23,23,PER_GAME):level===22?deck22(PER_GAME):level===21?deckPP(V21,21,PER_GAME):level===50?deckTest():level===20?deck20():level===19?deck19():level===18?deck18(PER_GAME):level===17?deck17():level===16?shuffle(Q16.slice()):level===15?deck15(PER_GAME):level===14?deck14(PER_GAME):level===13?shuffle(CONVO.slice()):level===12?shuffle(ADJS.slice()).slice(0,PER_GAME):level===11?shuffle(GREET.slice()).slice(0,PER_GAME):level===99?deckL(PER_GAME).map(w=>({...w,listen:true})):level===10?deck10(PER_GAME):level===9?deck9(PER_GAME):level===8?shuffle(VERBS.slice()):level===7?shuffle(PEOPLE.slice()).slice(0,PER_GAME):level===6?shuffle(FOOD.slice()).slice(0,PER_GAME):level===5?deck3(PER_GAME):level===4?deckC():level===3?deck2(PER_GAME):level===2?deckN():shuffle(WORDS.slice()).slice(0,PER_GAME);idx=0;score=0;lives=LIVES;hits=0;missed=[];res=[];
+  deck=level===24?deck24():level===23?deckPP(V23,23,PER_GAME):level===22?deck22(PER_GAME):level===21?deckPP(V21,21,PER_GAME):level===50?deckTest():level===20?deck20():level===19?deck19():level===18?deck18(PER_GAME):level===17?deck17():level===16?shuffle(Q16.slice()):level===15?deck15(PER_GAME):level===14?deck14(PER_GAME):level===13?shuffle(CONVO.slice()):level===12?shuffle(ADJS.slice()).slice(0,PER_GAME):level===11?shuffle(GREET.slice()).slice(0,PER_GAME):level===99?deckL(PER_GAME).map(w=>({...w,listen:true})):level===10?deck10(PER_GAME):level===9?deck9(PER_GAME):level===8?shuffle(VERBS.slice()):level===7?shuffle(PEOPLE.slice()).slice(0,PER_GAME):level===6?shuffle(FOOD.slice()).slice(0,PER_GAME):level===5?deck3(PER_GAME):level===4?deckC():level===3?deck2(PER_GAME):level===2?deckN():shuffle(WORDS.slice()).slice(0,PER_GAME);idx=0;score=0;lives=LIVES;hits=0;missed=[];res=[];t0=Date.now();nHelp=0;nRetry=0;emit('start',{});
   if(level<=12||level===14||level===15||level===18||level===19||(level>=21&&level<=23)){let run=0;deck=deck.map((w,i)=>{const L=i>0&&run<2&&Math.random()<.33;run=L?run+1:0;return L?{...w,listen:true,audio:w.audioL||w.audio,choices:shuffle([w,...variants(w)])}:w})}
   state='play';$('menu').hidden=true;$('menuA2').hidden=true;$('home').hidden=true;$('over').hidden=true;$('note').textContent=SR?'':'Este navegador não reconhece voz. Digite a palavra.';showType(!SR);unlockAudio();autoBlocked=false;show();
   if(deck[0]&&deck[0].lvl!==13&&!deck[0].write)autoListen();}   // 1ª figura: liga o microfone ainda dentro do toque
@@ -1018,6 +1019,7 @@ function end(){state='over';phase='done';if(listening||rec){killRec();listening=
       const i=document.createElement('i');const e=document.createElement('em');e.style.width=sc[k]+'%';i.append(e);d.append(a,b,i);box.append(d)}
     const weak=Object.keys(SECN).filter(k=>sc[k]<60).map(k=>SECN[k]);const v=$('verdict');v.hidden=false;v.className='verdict '+(pass?'ok':'no');
     v.textContent=pass?'Você tem o A1. A Fase A2 está liberada.':(weak.length?'Reforce: '+weak.join(', ')+' (abaixo de 60%).':'Faltou chegar a 70% no total.')}
+  emit('game',{score,pct:Math.round(score*100/Math.max(1,deck.length*10)),hits,total:deck.length,helped:nHelp,retries:nRetry,dur:Math.round((Date.now()-t0)/1000),missed:missed.map(w=>w.it).slice(0,30)});
   setTimeout(()=>{$('over').hidden=false},500)}
 
 /* ---------- relógio ---------- */
@@ -1028,12 +1030,15 @@ function tick(now){const dt=Math.min(.1,(now-(last||now))/1000);last=now;
 requestAnimationFrame(tick);
 hud();
 addEventListener('resize',()=>{if(document.body.classList.contains('listen'))fitOpts()});
-window.__ita={deck:()=>deck,type:v=>{$('typeIn').value=v;$('typeForm').requestSubmit()},st:()=>({state,phase,idx,score,lives,hits,word:deck[idx]&&deck[idx].it,w:deck[idx]}),matches,check14,check15,check17,deck17,deck14,deck15,Q16,follow16,mk14,mk15,PRED,PRON,VERBS15,A16,S17,slg,check18,check19,check20,deck18,deck19,deck20,mk18,mkH,mkD,mkM,mkDt,mkLike,mkNeg,IRR,HOURS,DAYS,MONTHS,DATES,V21,V22,V23,SUBJ22,S24,mkPP,mk22,checkPP,check17,deck24,deck22,deckPP,LIKES,NEG20,SPELL,PHONE,pctOf,histOf,deckTest,READ,testRes,res:()=>res,check2,check3,checkN,checkC,checkA,checkQ,GREET,ADJS,CONVO,NUMS,deckL,variants,checkV,checkW,checkX,scene,FOOD,PEOPLE,VERBS,tintedCopy,WORDS,NOUNS2,NOUNS3,COLORS};
+window.__ita={deck:()=>deck,type:v=>{$('typeIn').value=v;$('typeForm').requestSubmit()},st:()=>({state,phase,idx,score,lives,hits,word:deck[idx]&&deck[idx].it,w:deck[idx]}),matches,check14,check15,check17,deck17,deck14,deck15,Q16,follow16,mk14,mk15,PRED,PRON,VERBS15,A16,S17,slg,check18,check19,check20,deck18,deck19,deck20,mk18,mkH,mkD,mkM,mkDt,mkLike,mkNeg,IRR,HOURS,DAYS,MONTHS,DATES,V21,V22,V23,SUBJ22,S24,mkPP,mk22,checkPP,check17,deck24,deck22,deckPP,LIKES,NEG20,SPELL,PHONE,pctOf,histOf,deckTest,READ,testRes,res:()=>res,refresh:()=>showRecs(),check2,check3,checkN,checkC,checkA,checkQ,GREET,ADJS,CONVO,NUMS,deckL,variants,checkV,checkW,checkX,scene,FOOD,PEOPLE,VERBS,tintedCopy,WORDS,NOUNS2,NOUNS3,COLORS};
 if('serviceWorker' in navigator){addEventListener('load',()=>{navigator.serviceWorker.register('../sw.js',{scope:'../'}).catch(()=>{})})}
 // Aberto pelo Fliperama (?hub) mostra "voltar aos jogos"; aberto pelo link próprio funciona como app separado
 (()=>{let hub=false;try{if(new URLSearchParams(location.search).has('hub'))sessionStorage.setItem('ita-hub','1');hub=sessionStorage.getItem('ita-hub')==='1'}catch(e){}
   if(hub)return;document.querySelectorAll('a.alt[href="../"]').forEach(a=>a.hidden=true);const b=document.querySelector('a.back');if(b){b.href='./';b.textContent='◀ Início'}})();
 })();
 </script>
+<script src="config.js"></script>
+<script src="vendor/supabase.js" defer></script>
+<script src="cloud.js" defer></script>
 </body>
 </html>

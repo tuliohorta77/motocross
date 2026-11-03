@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#fbf3e4">
+<link rel="icon" href="icon-192.png">
+<title>Parla Italiano · Professor</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap">
+<style>
+/* Layout: cabeçalho, linha de indicadores, turmas, tabela de alunos; ficha do aluno abre num painel lateral (tela cheia no celular) */
+:root{--paper:#fbf3e4;--card:#fffaf1;--ink:#2b2118;--muted:#7d6a58;--verde:#0b8a4a;--rosso:#cf2e3a;--terra:#c8643a;--line:#ead9bf;--gold:#f2b531;--soft:#efe2cb;
+  --display:'Fredoka','Arial Rounded MT Bold','Trebuchet MS',sans-serif;--body:'Nunito','Trebuchet MS',sans-serif;color-scheme:light}
+*,*::before,*::after{box-sizing:border-box}[hidden]{display:none!important}
+html,body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px}
+body{background-image:linear-gradient(90deg,var(--verde) 0 33.3%,#fff 33.3% 66.6%,var(--rosso) 66.6%);background-size:100% 5px;background-repeat:no-repeat}
+.wrap{max-width:1180px;margin:0 auto;padding:22px max(16px,env(safe-area-inset-left)) 40px max(16px,env(safe-area-inset-right));display:flex;flex-direction:column;gap:18px}
+h1,h2,h3{font-family:var(--display);margin:0;line-height:1.1}
+h1{font-size:28px;color:var(--rosso)}h1 span{color:var(--verde)}
+h2{font-size:20px}h3{font-size:16px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.btn{font-family:var(--display);font-weight:600;font-size:15px;border:0;border-radius:12px;padding:9px 14px;cursor:pointer;background:var(--verde);color:#fff}
+.btn.ghost{background:var(--card);color:var(--ink);border:2px solid var(--line)}
+.btn.red{background:var(--rosso)}
+.btn:disabled{opacity:.5}
+.card{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:16px;min-width:0}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.kpi b{display:block;font-family:var(--display);font-size:30px;line-height:1;color:var(--verde)}
+.kpi span{font-weight:800;font-size:13px;color:var(--muted)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+input,select{font-family:var(--body);font-weight:700;font-size:15px;padding:9px 11px;border:2px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);min-width:0}
+.classes{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;margin-top:12px}
+.cls{border:2px dashed var(--line);border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:4px}
+.cls code{font-family:var(--display);font-weight:700;font-size:20px;color:var(--verde);letter-spacing:.04em}
+.cls small{color:var(--muted);font-weight:700}
+.tblw{overflow-x:auto;margin-top:10px}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:820px}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);text-align:left;padding:8px;border-bottom:2px solid var(--line);cursor:pointer;white-space:nowrap}
+td{padding:9px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+tbody tr{cursor:pointer}tbody tr:hover{background:#fff6e5}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.band{display:inline-block;border-radius:999px;padding:2px 9px;font-weight:800;font-size:12px;background:var(--soft)}
+.b0{background:#fde2e2;color:#8f1d26}.b1{background:#fdecd2;color:#7a4a0b}.b2{background:#fdf3c4;color:#6b5600}.b3{background:#dff3e6;color:#075c31}.b4{background:var(--verde);color:#fff}
+.bar{height:8px;border-radius:999px;background:var(--soft);overflow:hidden;min-width:60px}.bar i{display:block;height:100%;background:var(--verde);border-radius:999px}
+.muted{color:var(--muted)}.ok{color:var(--verde)}.no{color:var(--rosso)}
+.login{max-width:420px;margin:8vh auto 0;display:flex;flex-direction:column;gap:12px}
+.login label{display:flex;flex-direction:column;gap:5px;font-weight:800;font-size:14px}
+.msg{min-height:1.2em;font-weight:800;color:var(--rosso);margin:0}
+.drawer{position:fixed;inset:0;background:rgba(43,33,24,.45);display:flex;justify-content:flex-end;z-index:5}
+.drawer .in{width:min(760px,100%);height:100%;overflow:auto;background:var(--paper);padding:20px max(16px,env(safe-area-inset-right)) 40px 18px;display:flex;flex-direction:column;gap:14px}
+.lgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:8px}
+.lcell{background:var(--card);border:2px solid var(--line);border-radius:12px;padding:8px 10px}
+.lcell b{font-family:var(--display);font-size:15px}.lcell .p{font-family:var(--display);font-size:22px;font-weight:700}
+.lcell small{display:block;color:var(--muted);font-weight:700;font-size:12px}
+.lcell small.stars,.stars{color:#c9920f;letter-spacing:1px;font-size:14px}
+.days{display:flex;align-items:flex-end;gap:4px;height:120px;padding-top:6px}
+.days div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;height:100%;min-width:0}
+.days i{display:block;width:100%;max-width:26px;background:var(--verde);border-radius:6px 6px 2px 2px;min-height:2px}
+.days small{font-size:10px;color:var(--muted);font-weight:700}
+.hbars{display:flex;flex-direction:column;gap:6px}
+.hbars div{display:grid;grid-template-columns:minmax(90px,170px) 1fr 70px;gap:8px;align-items:center;font-weight:700;font-size:13px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:700px){.two{grid-template-columns:1fr}}
+.list{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px;font-size:14px}
+.list li{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid var(--line);padding-bottom:5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><h1>Parla <span>Italiano</span> · Professor</h1><div class="row"><span id="meName" class="muted"></span><button class="btn ghost" id="reload" hidden>↻ Atualizar</button><button class="btn ghost" id="logout" hidden>Sair</button></div></div>
+
+  <div class="card login" id="noCfg" hidden><h2>Falta conectar o Supabase</h2><p>Preencha <b>italiano/config.js</b> com a URL e a chave pública do projeto e publique de novo.</p></div>
+
+  <form class="card login" id="loginBox" hidden>
+    <h2 id="lgTitle">Entrar</h2>
+    <label id="nmW" hidden>Seu nome<input id="nm" autocomplete="name"></label>
+    <label>E-mail<input id="em" type="email" autocomplete="username" required></label>
+    <label>Senha<input id="pw" type="password" autocomplete="current-password" minlength="6" required></label>
+    <button class="btn" id="lgBtn" type="submit">Entrar</button>
+    <p class="msg" id="lgMsg"></p>
+    <button class="btn ghost" id="lgToggle" type="button">Primeiro acesso: criar conta de professor</button>
+  </form>
+
+  <div id="app" hidden>
+    <div class="kpis">
+      <div class="card kpi"><b id="kAl">0</b><span>alunos</span></div>
+      <div class="card kpi"><b id="kAt">0</b><span>ativos nos últimos 7 dias</span></div>
+      <div class="card kpi"><b id="kMin">0</b><span>de uso nos últimos 7 dias</span></div>
+      <div class="card kpi"><b id="kNv">0%</b><span>nível médio no A1</span></div>
+      <div class="card kpi"><b id="kTe">0</b><span>aprovados no Teste A1</span></div>
+    </div>
+
+    <div class="card">
+      <div class="top"><h2>Turmas</h2><form class="row" id="newCls"><input id="clsName" placeholder="Nome da nova turma" required><button class="btn">Criar turma</button></form></div>
+      <div class="classes" id="classes"></div>
+    </div>
+
+    <div class="card">
+      <div class="top"><h2>Alunos</h2><div class="row"><select id="fCls"><option value="">Todas as turmas</option></select><input id="fName" placeholder="Buscar aluno"></div></div>
+      <div class="tblw"><table><thead><tr>
+        <th data-k="name">Aluno</th><th data-k="cls">Turma</th><th data-k="overall">Nível A1</th><th data-k="a1stars" class="num">Lições ★★</th><th data-k="test">Teste A1</th>
+        <th data-k="a2" class="num">A2</th><th data-k="m7" class="num">Uso 7 dias</th><th data-k="mt" class="num">Uso total</th><th data-k="last">Último acesso</th></tr></thead>
+        <tbody id="rows"></tbody></table></div>
+      <p class="muted" id="empty" hidden>Nenhum aluno ainda. Passe o código da turma (ou o link) para os alunos entrarem em “Primeira vez”.</p>
+    </div>
+  </div>
+</div>
+
+<div class="drawer" id="drawer" hidden><div class="in" id="det"></div></div>
+
+<script src="config.js"></script>
+<script src="vendor/supabase.js"></script>
+<script>
+(() => {
+const $ = id => document.getElementById(id);
+const el = (t, c, tx) => { const d = document.createElement(t); if (c) d.className = c; if (tx != null) d.textContent = tx; return d };
+const C = window.PARLA_CFG || {};
+if (!C.url || !C.key) { $('noCfg').hidden = false; return }
+const sb = supabase.createClient(C.url, C.key, { auth: { persistSession: true, storageKey: 'parla-prof-auth' } });
+
+/* ---- mesma régua do jogo ---- */
+const PHASES = [...Array(20)].map((_, i) => i + 1), A2L = [21, 22, 23, 24];
+const NAMES = {1:'Objetos',2:'Números',3:'Número + objeto',4:'Cores',5:'Tudo junto',6:'Comidas',7:'Família',8:'Verbos',9:'Onde está',10:'Fora da caixa',11:'Cumprimentos',12:'Adjetivos',13:'Conversa',14:'Essere/avere',15:'Verbos regulares',16:'Perguntas',17:'Situações',18:'Irregulares',19:'Tempo',20:'Gostos',21:'Passado avere',22:'Passado essere',23:'Particípios irreg.',24:'Ieri…',50:'Teste A1',99:'Modo Escuta'};
+const SKILLS = [['Vocabulário',[1,4,6,7]],['Números e tempo',[2,3,19]],['Gramática',[5,12,14,15,18]],['Frases',[8,9,10]],['Comunicação',[11,13,16,17,20]]];
+const BANDS = [[90,'A1 completo'],[75,'A1 quase completo'],[50,'A1.2'],[25,'A1.1'],[0,'Pré-A1']];
+const stars = p => p >= 95 ? '★★★' : p >= 85 ? '★★☆' : p >= 70 ? '★☆☆' : '☆☆☆';
+const avg = a => a.length ? Math.round(a.reduce((x, y) => x + y, 0) / a.length) : 0;
+function level(pm, prof, passed) {
+  const pct = l => pm[l] || 0, ph = PHASES.map(pct), a = ph.reduce((x, y) => x + y, 0) / PHASES.length;
+  const ear = prof.ouv_tot >= 10 ? Math.round(prof.ouv_ok * 100 / prof.ouv_tot) : null, overall = Math.round(ear === null ? a : a * .85 + ear * .15);
+  let bi = BANDS.findIndex(b => overall >= b[0]);
+  if (bi === 0) { const weak = SKILLS.some(([, ls]) => avg(ls.map(pct)) < 80) || ph.some(p => p < 70) || ear === null || ear < 80 || !passed; if (weak) bi = 1 }
+  return { overall, bi, band: BANDS[bi][1], ear, skills: SKILLS.map(([n, ls]) => [n, avg(ls.map(pct))]) }
+}
+const fmtMin = m => { m = Math.round(m || 0); return m < 60 ? m + ' min' : Math.floor(m / 60) + 'h ' + String(m % 60).padStart(2, '0') }
+const fmtAgo = d => { if (!d) return '—'; const s = (Date.now() - new Date(d)) / 1000; if (s < 120) return 'agora'; if (s < 3600) return Math.round(s / 60) + ' min atrás'; if (s < 86400) return Math.round(s / 3600) + ' h atrás'; return Math.round(s / 86400) + ' dias atrás' }
+const today = () => new Date(Date.now() - 3 * 3600e3).toISOString().slice(0, 10);
+const dayAdd = (d, n) => new Date(new Date(d + 'T12:00:00Z').getTime() + n * 864e5).toISOString().slice(0, 10);
+
+/* ---- login ---- */
+let creating = false;
+$('lgToggle').addEventListener('click', () => { creating = !creating; $('nmW').hidden = !creating; $('nm').required = creating; $('lgTitle').textContent = creating ? 'Criar conta de professor' : 'Entrar';
+  $('lgBtn').textContent = creating ? 'Criar conta' : 'Entrar'; $('lgToggle').textContent = creating ? 'Já tenho conta: entrar' : 'Primeiro acesso: criar conta de professor'; $('lgMsg').textContent = '' });
+$('loginBox').addEventListener('submit', async e => {
+  e.preventDefault(); const msg = $('lgMsg'); msg.textContent = ''; $('lgBtn').disabled = true;
+  try {
+    const email = $('em').value.trim(), password = $('pw').value;
+    if (creating) {
+      const { data, error } = await sb.auth.signUp({ email, password });
+      if (error) { msg.textContent = error.message; return }
+      if (!data.session) { msg.textContent = 'Confirme o e-mail que o Supabase enviou e depois entre (ou desligue “Confirm email”).'; return }
+      const r = await sb.rpc('register_teacher', { p_name: $('nm').value.trim() || email });
+      if (r.error) { msg.textContent = r.error.message; return }
+      if (!r.data) { msg.textContent = 'Conta criada, mas já existe um professor administrador neste projeto.'; return }
+    } else {
+      const { error } = await sb.auth.signInWithPassword({ email, password });
+      if (error) { msg.textContent = 'E-mail ou senha não conferem.'; return }
+    }
+    await start()
+  } finally { $('lgBtn').disabled = false }
+});
+$('logout').addEventListener('click', async () => { await sb.auth.signOut(); location.reload() });
+$('reload').addEventListener('click', () => load());
+
+/* ---- dados ---- */
+let S = { classes: [], profiles: [], prog: [], tests: [], usage: [] }, rows = [], sortK = 'name', sortD = 1;
+async function start() {
+  const { data: s } = await sb.auth.getSession(); if (!s.session) { $('loginBox').hidden = false; return }
+  const { data: adm } = await sb.rpc('is_admin');
+  if (!adm) { $('loginBox').hidden = false; $('lgMsg').textContent = 'Esta conta não é de professor.'; await sb.auth.signOut(); return }
+  $('loginBox').hidden = true; $('app').hidden = false; $('logout').hidden = false; $('reload').hidden = false; $('meName').textContent = s.session.user.email;
+  await load()
+}
+async function all(q) { const out = []; for (let f = 0; ; f += 1000) { const { data, error } = await q().range(f, f + 999); if (error) throw error; out.push(...data); if (data.length < 1000) return out } }
+async function load() {
+  $('reload').disabled = true;
+  try {
+    const since = dayAdd(today(), -90);
+    [S.classes, S.profiles, S.prog, S.tests, S.usage] = await Promise.all([
+      all(() => sb.from('classes').select('*').order('created_at')),
+      all(() => sb.from('profiles').select('*').eq('is_admin', false)),
+      all(() => sb.from('progress').select('user_id,lesson,hist,best')),
+      all(() => sb.from('tests').select('user_id,tot,pass,taken_at').order('taken_at', { ascending: false })),
+      all(() => sb.from('usage_daily').select('user_id,day,screen,minutes').gte('day', since))]);
+    build(); renderClasses(); renderTable()
+  } catch (e) { alert('Erro ao carregar: ' + e.message) } finally { $('reload').disabled = false }
+}
+function build() {
+  const cls = Object.fromEntries(S.classes.map(c => [c.id, c])), d7 = dayAdd(today(), -6);
+  rows = S.profiles.map(p => {
+    const pm = {}; S.prog.filter(r => r.user_id === p.id).forEach(r => { pm[r.lesson] = avg((r.hist || []).map(Number)) });
+    const ts = S.tests.filter(t => t.user_id === p.id), passed = ts.some(t => t.pass), lv = level(pm, p, passed);
+    const us = S.usage.filter(u => u.user_id === p.id), mt = us.reduce((a, u) => a + +u.minutes, 0), m7 = us.filter(u => u.day >= d7).reduce((a, u) => a + +u.minutes, 0);
+    return { p, id: p.id, name: p.display_name, cls: (cls[p.class_id] || {}).name || '—', classId: p.class_id, pm, lv, overall: lv.overall,
+      a1stars: PHASES.filter(l => (pm[l] || 0) >= 85).length, test: ts[0] ? ts[0].tot : -1, passed, lastTest: ts[0], a2: avg(A2L.map(l => pm[l] || 0)), m7, mt, last: p.last_seen || '' }
+  });
+  $('kAl').textContent = rows.length; $('kAt').textContent = rows.filter(r => r.m7 > 0).length; $('kMin').textContent = fmtMin(rows.reduce((a, r) => a + r.m7, 0));
+  $('kNv').textContent = (rows.length ? avg(rows.map(r => r.overall)) : 0) + '%'; $('kTe').textContent = rows.filter(r => r.passed).length;
+  const f = $('fCls'), cur = f.value; f.length = 1; S.classes.forEach(c => f.append(new Option(c.name + ' (' + c.code + ')', c.id))); f.value = cur
+}
+function renderClasses() {
+  const box = $('classes'); box.innerHTML = '';
+  if (!S.classes.length) box.append(el('p', 'muted', 'Crie a primeira turma para gerar o código dos alunos.'));
+  const base = location.href.replace(/professor\.html.*$/, '');
+  S.classes.forEach(c => { const d = el('div', 'cls'); d.append(el('b', '', c.name), el('code', '', c.code), el('small', '', rows.filter(r => r.classId === c.id).length + ' alunos'));
+    const b = el('button', 'btn ghost', '🔗 Copiar link de entrada'); b.type = 'button'; b.addEventListener('click', async () => { const u = base + '?turma=' + encodeURIComponent(c.code); try { await navigator.clipboard.writeText(u); b.textContent = '✓ Link copiado' } catch (e) { prompt('Link da turma:', u) } });
+    d.append(b); box.append(d) })
+}
+$('newCls').addEventListener('submit', async e => {
+  e.preventDefault(); const name = $('clsName').value.trim(); if (!name) return;
+  const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let code = 'ITA-'; for (let i = 0; i < 4; i++) code += A[Math.floor(Math.random() * A.length)];
+  const { error } = await sb.from('classes').insert({ name, code }); if (error) { alert(error.message); return }
+  $('clsName').value = ''; await load()
+});
+document.querySelectorAll('th[data-k]').forEach(th => th.addEventListener('click', () => { const k = th.dataset.k; sortD = sortK === k ? -sortD : (k === 'name' || k === 'cls' ? 1 : -1); sortK = k; renderTable() }));
+$('fCls').addEventListener('change', renderTable); $('fName').addEventListener('input', renderTable);
+function renderTable() {
+  const tb = $('rows'); tb.innerHTML = ''; const fc = $('fCls').value, fn = $('fName').value.trim().toLowerCase();
+  const list = rows.filter(r => (!fc || r.classId === fc) && (!fn || r.name.toLowerCase().includes(fn)))
+    .sort((a, b) => { const x = a[sortK], y = b[sortK]; return (typeof x === 'string' ? x.localeCompare(y) : x - y) * sortD });
+  $('empty').hidden = rows.length > 0;
+  list.forEach(r => {
+    const tr = el('tr'); tr.addEventListener('click', () => openStudent(r));
+    const lvTd = el('td'); const bd = el('span', 'band b' + (4 - r.lv.bi), r.lv.band); lvTd.append(bd, document.createTextNode(' ' + r.overall + '%'));
+    const tt = el('td', r.passed ? 'ok' : r.test >= 0 ? 'no' : 'muted', r.passed ? '✓ aprovado' : r.test >= 0 ? r.test + '%' : '—');
+    tr.append(el('td', '', r.name), el('td', 'muted', r.cls), lvTd, el('td', 'num', r.a1stars + '/20'), tt, el('td', 'num', r.a2 ? r.a2 + '%' : '—'),
+      el('td', 'num', fmtMin(r.m7)), el('td', 'num', fmtMin(r.mt)), el('td', 'muted', fmtAgo(r.last)));
+    tb.append(tr)
+  })
+}
+
+/* ---- ficha do aluno ---- */
+$('drawer').addEventListener('click', e => { if (e.target === $('drawer')) $('drawer').hidden = true });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') $('drawer').hidden = true });
+async function openStudent(r) {
+  const D = $('det'); D.innerHTML = ''; $('drawer').hidden = false;
+  const head = el('div', 'top'); const h = el('div'); h.append(el('h2', '', r.name), el('div', 'muted', r.cls + ' · último acesso ' + fmtAgo(r.last)));
+  const close = el('button', 'btn ghost', 'Fechar'); close.type = 'button'; close.addEventListener('click', () => $('drawer').hidden = true); head.append(h, close); D.append(head);
+  const k = el('div', 'kpis'); [[r.overall + '%', r.lv.band], [r.a1stars + '/20', 'lições do A1 com ★★'], [r.passed ? '✓' : r.test >= 0 ? r.test + '%' : '—', 'Teste A1'], [r.lv.ear === null ? '—' : r.lv.ear + '%', 'ouvido (escuta)'], [fmtMin(r.mt), 'tempo total']]
+    .forEach(([a, b]) => { const c = el('div', 'card kpi'); c.append(el('b', '', a), el('span', '', b)); k.append(c) }); D.append(k);
+  const sk = el('div', 'card'); sk.append(el('h3', '', 'Habilidades')); const hb = el('div', 'hbars'); hb.style.marginTop = '10px';
+  r.lv.skills.forEach(([n, v]) => { const row = el('div'); const b = el('div', 'bar'); const i = el('i'); i.style.width = v + '%'; b.append(i); row.append(el('span', '', n), b, el('span', 'num', v + '%')); hb.append(row) }); sk.append(hb); D.append(sk);
+  const loading = el('p', 'muted', 'Carregando histórico…'); D.append(loading);
+  const since = dayAdd(today(), -13);
+  const [g, mi] = await Promise.all([
+    sb.from('games').select('lesson,score,pct,hits,total,helped,retries,duration_s,played_at').eq('user_id', r.id).order('played_at', { ascending: false }).limit(300),
+    sb.from('missed_items').select('lesson,item,errors,tries').eq('user_id', r.id).order('errors', { ascending: false }).limit(12)]);
+  loading.remove(); const games = g.data || [];
+  const plays = {}; games.forEach(x => { plays[x.lesson] = (plays[x.lesson] || 0) + 1 });
+  const lc = el('div', 'card'); lc.append(el('h3', '', 'Lições (média das 3 últimas partidas)')); const grid = el('div', 'lgrid'); grid.style.marginTop = '10px';
+  [...PHASES, ...A2L].forEach(l => { const v = r.pm[l]; const c = el('div', 'lcell'); c.append(el('b', '', (l > 20 ? 'A2 · ' + (l - 20) : 'Fase ' + l)), el('small', '', NAMES[l]),
+    el('div', 'p ' + (v == null ? 'muted' : ''), v == null ? '—' : v + '%'), el('small', 'stars', v == null ? '' : stars(v)), el('small', '', (plays[l] || 0) + ((plays[l] || 0) === 1 ? ' partida' : ' partidas'))); grid.append(c) });
+  lc.append(grid); D.append(lc);
+  const two = el('div', 'two');
+  const us = S.usage.filter(u => u.user_id === r.id);
+  const dc = el('div', 'card'); dc.append(el('h3', '', 'Minutos por dia (14 dias)')); const days = el('div', 'days'); const per = {}; us.forEach(u => { per[u.day] = (per[u.day] || 0) + +u.minutes });
+  const ds = [...Array(14)].map((_, i) => dayAdd(today(), i - 13)), mx = Math.max(5, ...ds.map(d => per[d] || 0));
+  ds.forEach(d => { const c = el('div'); const i = el('i'); i.style.height = ((per[d] || 0) * 100 / mx) + '%'; i.title = d + ': ' + fmtMin(per[d]); c.append(el('small', '', per[d] ? Math.round(per[d]) : ''), i, el('small', '', d.slice(8) + '/' + d.slice(5, 7))); days.append(c) });
+  dc.append(days); two.append(dc);
+  const sc = el('div', 'card'); sc.append(el('h3', '', 'Telas mais usadas')); const sb2 = el('div', 'hbars'); sb2.style.marginTop = '10px'; const scr = {}; us.forEach(u => { scr[u.screen] = (scr[u.screen] || 0) + +u.minutes });
+  const top = Object.entries(scr).sort((a, b) => b[1] - a[1]).slice(0, 8), smx = Math.max(1, ...top.map(x => x[1]));
+  if (!top.length) sb2.append(el('p', 'muted', 'Sem uso registrado ainda.'));
+  top.forEach(([n, m]) => { const row = el('div'); const b = el('div', 'bar'); const i = el('i'); i.style.width = (m * 100 / smx) + '%'; b.append(i); row.append(el('span', '', n), b, el('span', 'num', fmtMin(m))); sb2.append(row) });
+  sc.append(sb2); two.append(sc); D.append(two);
+  const two2 = el('div', 'two');
+  const wc = el('div', 'card'); wc.append(el('h3', '', 'O que mais erra')); const wl = el('ul', 'list'); wl.style.marginTop = '10px';
+  const miss = (mi.data || []).filter(x => x.errors > 0);
+  if (!miss.length) wl.append(el('li', 'muted', 'Nenhum erro registrado ainda.'));
+  miss.forEach(x => { const li = el('li'); li.append(el('span', '', x.item || '—'), el('span', 'muted', (NAMES[x.lesson] || 'Fase ' + x.lesson) + ' · ' + x.errors + ' de ' + x.tries)); wl.append(li) });
+  wc.append(wl); two2.append(wc);
+  const gc = el('div', 'card'); gc.append(el('h3', '', 'Partidas recentes')); const gl = el('ul', 'list'); gl.style.marginTop = '10px';
+  if (!games.length) gl.append(el('li', 'muted', 'Nenhuma partida ainda.'));
+  games.slice(0, 12).forEach(x => { const li = el('li'); li.append(el('span', '', (x.lesson > 20 && x.lesson < 50 ? 'A2 · ' + (x.lesson - 20) : x.lesson === 50 ? 'Teste A1' : x.lesson === 99 ? 'Escuta' : 'Fase ' + x.lesson) + ' · ' + NAMES[x.lesson]),
+    el('span', 'muted', x.pct + '% · ' + (x.helped ? x.helped + ' ajudas · ' : '') + fmtMin((x.duration_s || 0) / 60) + ' · ' + new Date(x.played_at).toLocaleDateString('pt-BR'))); gl.append(li) });
+  gc.append(gl); two2.append(gc); D.append(two2);
+  const del = el('button', 'btn red', 'Remover aluno'); del.type = 'button'; del.style.alignSelf = 'flex-start';
+  del.addEventListener('click', async () => { if (!confirm('Remover ' + r.name + ' e todo o histórico?')) return; const { error } = await sb.from('profiles').delete().eq('id', r.id); if (error) { alert(error.message); return } $('drawer').hidden = true; await load() });
+  D.append(del)
+}
+start()
+})();
+</script>
+</body>
+</html>
