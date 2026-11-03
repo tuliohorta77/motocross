@@ -6,11 +6,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Fliperama">
+<meta name="apple-mobile-web-app-title" content="Italiano">
 <meta name="theme-color" content="#fbf3e4">
-<link rel="apple-touch-icon" href="../icon-180.png">
-<link rel="icon" href="../icon-192.png">
-<link rel="manifest" href="../manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
 <title>Parla Italiano</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap">
@@ -1030,6 +1030,9 @@ hud();
 addEventListener('resize',()=>{if(document.body.classList.contains('listen'))fitOpts()});
 window.__ita={deck:()=>deck,type:v=>{$('typeIn').value=v;$('typeForm').requestSubmit()},st:()=>({state,phase,idx,score,lives,hits,word:deck[idx]&&deck[idx].it,w:deck[idx]}),matches,check14,check15,check17,deck17,deck14,deck15,Q16,follow16,mk14,mk15,PRED,PRON,VERBS15,A16,S17,slg,check18,check19,check20,deck18,deck19,deck20,mk18,mkH,mkD,mkM,mkDt,mkLike,mkNeg,IRR,HOURS,DAYS,MONTHS,DATES,V21,V22,V23,SUBJ22,S24,mkPP,mk22,checkPP,check17,deck24,deck22,deckPP,LIKES,NEG20,SPELL,PHONE,pctOf,histOf,deckTest,READ,testRes,res:()=>res,check2,check3,checkN,checkC,checkA,checkQ,GREET,ADJS,CONVO,NUMS,deckL,variants,checkV,checkW,checkX,scene,FOOD,PEOPLE,VERBS,tintedCopy,WORDS,NOUNS2,NOUNS3,COLORS};
 if('serviceWorker' in navigator){addEventListener('load',()=>{navigator.serviceWorker.register('../sw.js',{scope:'../'}).catch(()=>{})})}
+// Aberto pelo Fliperama (?hub) mostra "voltar aos jogos"; aberto pelo link próprio funciona como app separado
+(()=>{let hub=false;try{if(new URLSearchParams(location.search).has('hub'))sessionStorage.setItem('ita-hub','1');hub=sessionStorage.getItem('ita-hub')==='1'}catch(e){}
+  if(hub)return;document.querySelectorAll('a.alt[href="../"]').forEach(a=>a.hidden=true);const b=document.querySelector('a.back');if(b){b.href='./';b.textContent='◀ Início'}})();
 })();
 </script>
 </body>
