@@ -134,6 +134,7 @@ form.type button{font-family:var(--display);font-weight:700;font-size:18px;borde
 .readbox{display:block;margin:2px auto 10px;max-width:420px;background:#fff;border:3px solid var(--line);border-radius:16px;padding:12px 14px;font-family:var(--display);font-weight:700;
   font-size:clamp(19px,5.4vmin,24px);line-height:1.25;color:var(--ink);box-shadow:0 4px 0 var(--line);white-space:pre-line}
 .reading #replay{display:none!important}
+#replay.nudge{animation:pulse 1s infinite;box-shadow:0 0 0 4px var(--gold)}
 .exam .hearts{visibility:hidden}.exam #hear{visibility:hidden}
 .secbadge{display:inline-block;background:var(--ink);color:#fff;border-radius:999px;padding:2px 9px;font-size:12px;font-weight:800;margin-right:6px;vertical-align:2px}
 .exambox{display:grid;gap:8px;text-align:left}
@@ -716,15 +717,22 @@ if('speechSynthesis' in window){pickVoice();try{speechSynthesis.onvoiceschanged=
 function synth(text){try{const ss=speechSynthesis;const go=()=>{try{ss.resume()}catch(_){}const u=new SpeechSynthesisUtterance(text);u.lang='it-IT';if(itVoice)u.voice=itVoice;u.rate=.85;ss.speak(u)};
   if(ss.speaking||ss.pending){ss.cancel();setTimeout(go,150)}else go()}catch(e){}}
 function say(w,onDone){ // w = palavra do jogo; onDone roda quando o áudio termina
-  if(listening||rec){killRec();listening=false;micUI()}playSession();
-  const text=full(w);let started=false,done=false;const fin=()=>{if(done)return;done=true;if(onDone)setTimeout(onDone,250)};
-  player.onended=fin;setTimeout(fin,6000);
-  try{player.pause();player.src='audio/'+(w.audio||slug(w.it))+'.mp3?v=2';player.currentTime=0;
-    player.onplaying=()=>{started=true};
-    const p=player.play();if(p&&p.catch)p.catch(()=>{if(!started){started=true;synth(text);setTimeout(fin,1800)}})}catch(e){synth(text);setTimeout(fin,1800)}
-  player.onerror=()=>{if(!started){started=true;synth(text);setTimeout(fin,1800)}};
-  setTimeout(()=>{if(!started&&player.paused){synth(text);$('note').textContent='Sem som? Aumente o volume do iPhone.'}},1500);
+  const wasMic=!!(listening||rec);if(wasMic){killRec();listening=false;micUI()}const switched=playSession();
+  const text=full(w);let started=false,done=false,tries=0;const fin=()=>{if(done)return;done=true;if(onDone)setTimeout(onDone,250)};
+  const src='audio/'+(w.audio||slug(w.it))+'.mp3?v=2',my=++sayN;
+  const fallback=()=>{if(started||my!==sayN)return;started=true;synth(text);setTimeout(fin,1800);nudge()};
+  // o iPhone às vezes recusa tocar logo depois de desligar o microfone: tenta de novo antes de cair na voz sintética
+  const attempt=()=>{if(started||my!==sayN)return;tries++;
+    try{player.pause();if(!player.src.endsWith(src))player.src=src;player.currentTime=0;
+      const p=player.play();if(p&&p.catch)p.catch(()=>{if(started||my!==sayN)return;if(tries<3){playSession();setTimeout(attempt,350)}else fallback()})}catch(e){if(tries<3)setTimeout(attempt,350);else fallback()}};
+  player.onended=fin;player.onplaying=()=>{if(my===sayN){started=true;clearNudge()}};player.onerror=()=>{if(my===sayN)fallback()};
+  setTimeout(fin,7000);setTimeout(attempt,(wasMic||switched)?400:0);
+  setTimeout(()=>{if(!started&&my===sayN&&player.paused){if(tries<3){playSession();attempt()}}},1600);
+  setTimeout(()=>{if(!started&&my===sayN&&player.paused)fallback()},3000);
 }
+let sayN=0;
+function nudge(){const r=$('replay');if(r)r.classList.add('nudge');$('note').textContent='Sem som? Toque em 🔊 Ouvir de novo e confira o volume do iPhone.'}
+function clearNudge(){const r=$('replay');if(r)r.classList.remove('nudge');if($('note').textContent.startsWith('Sem som'))$('note').textContent=''}
 
 /* ---------- sons curtos ---------- */
 let AC=null;function ac(){if(!AC){try{AC=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}}return AC}
@@ -776,7 +784,7 @@ const IOS=/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='M
 let AUTO=true,autoBlocked=false,lastAuto=false;
 try{AUTO=localStorage.getItem('italiano-automic')!=='0'}catch(e){}
 function autoListen(){if(!AUTO||autoBlocked||!SR||state!=='play'||phase!=='ask'||!deck[idx]||deck[idx].listen||listening)return;retried=false;startRec(true,true)}
-function playSession(){try{if(navigator.audioSession)navigator.audioSession.type='playback'}catch(e){}}   // som pelo alto-falante principal
+function playSession(){try{if(navigator.audioSession&&navigator.audioSession.type!=='playback'){navigator.audioSession.type='playback';return true}}catch(e){}return false}   // som pelo alto-falante principal
 function micSession(){try{if(navigator.audioSession)navigator.audioSession.type='play-and-record'}catch(e){}}   // microfone com sensibilidade total
 let recStartedAt=0;
 function startRec(cont,auto=false){lastAuto=auto;recStartedAt=Date.now();if(IOS)cont=false;try{player.pause()}catch(e){}killRec();micSession();restarts=0;rec=setupRec(cont);heardFinal='';accum='';curText='';gotSomething=false;userStop=false;fatal=false;
