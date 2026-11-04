@@ -125,6 +125,32 @@ form.type button{font-family:var(--display);font-weight:700;font-size:18px;borde
 .ng{display:flex;flex-direction:column;align-items:center;line-height:1}.ng small{font-family:var(--display);font-weight:700;font-size:.19em;color:var(--ink);margin-top:.3em;white-space:normal;max-width:12em}
 .pic.mini .ng small{font-size:.3em}
 .tiers{display:grid;gap:12px}
+.sheet.wide{width:min(620px,100%)}
+.choice{display:grid;gap:10px}
+.choice button{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;align-items:center;text-align:left;border:0;border-radius:18px;padding:14px 16px;cursor:pointer;color:#fff;font-family:var(--body)}
+.choice .ic{grid-row:span 2;font-size:34px}
+.choice b{font-family:var(--display);font-weight:700;font-size:22px;line-height:1}
+.choice small{font-size:13px;font-weight:700;opacity:.92;line-height:1.3}
+.choice .learn{background:var(--verde);box-shadow:0 4px 0 #075c31}.choice .play{background:var(--rosso);box-shadow:0 4px 0 #8f1d26}
+.choice .rec{grid-column:2;font-size:12px;font-weight:800;background:rgba(255,255,255,.22);border-radius:999px;padding:2px 8px;justify-self:start}
+.lnprog{margin:0;font-weight:800;font-size:14px;color:var(--verde)}
+.dsec{margin:6px 0 0;text-align:left}
+.dsec h3{font-family:var(--display);font-weight:700;font-size:18px;margin:6px 0 2px}
+.dsec p{margin:0 0 8px;font-size:13px;font-weight:700;color:var(--terra);line-height:1.3}
+.dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:10px}
+.dcard{background:#fff;border:2px solid var(--line);border-radius:16px;padding:8px;display:flex;flex-direction:column;gap:4px;align-items:stretch;text-align:center;position:relative}
+.dcard.done{border-color:var(--verde)}
+.dcard.done::after{content:'✓';position:absolute;top:6px;right:8px;font-weight:800;color:var(--verde)}
+.dtap{border:0;background:#fffaf1;border-radius:12px;min-height:84px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;padding:6px;overflow:hidden}
+.dtap .pic.mini{--base:60px}
+.dtap .dq{font-family:var(--display);font-weight:600;font-size:15px;color:var(--ink)}
+.dtap small{font-size:11px;color:var(--muted);font-weight:700}
+.dit{font-family:var(--display);font-weight:700;font-size:17px;line-height:1.15;color:var(--ink)}
+.dpt{font-size:12px;font-weight:700;color:var(--muted);line-height:1.2}
+.dmic{border:0;border-radius:12px;padding:8px 6px;font-family:var(--display);font-weight:600;font-size:15px;background:var(--rosso);color:#fff;cursor:pointer;margin-top:2px}
+.dmic.on{background:var(--verde);animation:pulse 1s infinite}
+.dfb{margin:0;font-size:12px;font-weight:800;min-height:1em;line-height:1.25}
+.dfb.ok{color:var(--verde)}.dfb.no{color:var(--rosso)}
 .lv21{background:#2d5bd6;box-shadow:0 4px 0 #1b3c94}.lv22{background:#7b3fbf;box-shadow:0 4px 0 #4f2385}.lv23{background:#c8643a;box-shadow:0 4px 0 #8a3f1f}.lv24{background:#0e8f8f;box-shadow:0 4px 0 #075f5f}
 .soonrow{grid-column:1/-1;border:2px dashed var(--line);border-radius:16px;padding:10px 12px;text-align:left;font-size:13px;font-weight:700;color:var(--muted);line-height:1.35}
 .soonrow b{color:var(--ink)}
@@ -344,6 +370,29 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
   </div>
 </div>
 
+<div class="panel" id="lessonSheet" hidden>
+  <div class="sheet">
+    <div class="backrow"><button class="backbtn" type="button" id="lsBack">◀ Lições</button></div>
+    <h2 id="lsTitle">Lição</h2>
+    <p class="how" id="lsSub"></p>
+    <div class="choice">
+      <button class="learn" type="button" id="lsLearn"><span class="ic">📖</span><b>Aprender</b><small>Dicionário da lição: veja, ouça e repita sem tempo. O jogo diz se ficou certo.</small><span class="rec" id="lsLearnRec"></span></button>
+      <button class="play" type="button" id="lsPlay"><span class="ic">🎯</span><b>Desafio</b><small>Valendo nota, com tempo, vidas e revisão das lições anteriores.</small><span class="rec" id="lsPlayRec"></span></button>
+    </div>
+  </div>
+</div>
+
+<div class="panel" id="learnPanel" hidden>
+  <div class="sheet wide">
+    <div class="backrow"><button class="backbtn" type="button" id="lnBack">◀ Lição</button></div>
+    <h2 id="lnTitle">Dicionário</h2>
+    <p class="how">Toque no cartão para <b>ouvir</b>. Toque em <b>🎤 Repetir</b> e fale: o jogo diz se ficou certo. Sem tempo e sem nota.</p>
+    <p class="lnprog" id="lnProg"></p>
+    <div id="lnBody"></div>
+    <button class="go" type="button" id="lnPlay">🎯 Ir para o desafio</button>
+  </div>
+</div>
+
 <div class="panel" id="levelPanel" hidden>
   <div class="sheet">
     <h2>Meu nível</h2>
@@ -491,7 +540,7 @@ function checkX(heard,w){const keys=core(heard).split(' ').filter(Boolean).map(p
 const slA=t=>t.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ /g,'-').replace(/['?!.,]/g,'').toLowerCase();
 const GREET=[["☀️👋", "Cumprimentar de manhã", "buongiorno", ["buon giorno"]], ["🌇👋", "Cumprimentar no fim da tarde", "buonasera", ["buona sera"]], ["😃👋", "Oi! (informal)", "ciao", []], ["🙏", "Agradecer", "grazie", ["grazie mille"]], ["😊", "Responder a um “grazie”", "prego", []], ["🙇", "Pedir desculpa a um desconhecido", "scusi", ["mi scusi", "scusa", "mi scusa"]], ["🙋", "Pedir algo com educação", "per favore", ["per piacere", "per cortesia"]], ["👋🚪", "Despedir-se (formal)", "arrivederci", ["arrivederla"]], ["🌙😴", "Desejar boa noite antes de dormir", "buonanotte", ["buona notte"]], ["🤝", "Ao ser apresentado a alguém", "piacere", ["piacere mio", "piacere di conoscerti", "molto piacere"]], ["🙂❓", "Perguntar “como vai?” a um amigo", "come stai", ["come va", "come stai tu"]], ["👍", "Responder “bem, obrigado”", "bene grazie", ["sto bene grazie", "benissimo grazie", "bene grazie e tu"]], ["🍽️", "Desejar bom apetite", "buon appetito", []], ["🥂", "Brindar: saúde!", "salute", ["cin cin"]], ["🎂", "Desejar feliz aniversário", "buon compleanno", ["tanti auguri"]], ["✈️", "Desejar boa viagem", "buon viaggio", []], ["🤷", "Dizer que não entendeu", "non capisco", ["non ho capito"]], ["🐢🗣️", "Pedir para falar mais devagar", "più piano per favore", ["più lentamente per favore", "parli più piano"]], ["⏰👋", "Até logo!", "a presto", ["a dopo", "ci vediamo"]], ["🌤️👋", "Boa tarde (cumprimento)", "buon pomeriggio", []], ["✅", "Sim", "sì", ["si"]], ["🙅", "De nada (outra forma)", "di niente", ["di nulla", "non c è di che"]], ["🎉", "Parabéns!", "congratulazioni", ["complimenti", "auguri"]]].map(([e,cap,it,alt])=>({lvl:11,e,cap,it,art:'',alt,pt:cap,audio:'f11/'+slA(it)}));
 const ADJS=[["🐘", "l'", "elefante", "m", "grande", "grande", "o elefante é grande"], ["🐭", "il", "topo", "m", "piccolo", "piccola", "o rato é pequeno"], ["🦒", "la", "giraffa", "f", "alto", "alta", "a girafa é alta"], ["🐢", "la", "tartaruga", "f", "lento", "lenta", "a tartaruga é lenta"], ["🐆", "il", "ghepardo", "m", "veloce", "veloce", "o guepardo é rápido"], ["☕", "il", "caffè", "m", "caldo", "calda", "o café é quente"], ["🧊", "il", "ghiaccio", "m", "freddo", "fredda", "o gelo é frio"], ["😀", "il", "bambino", "m", "felice", "felice", "o menino é feliz"], ["😢", "la", "bambina", "f", "triste", "triste", "a menina é triste"], ["👴", "il", "nonno", "m", "vecchio", "vecchia", "o avô é velho"], ["🌹", "la", "rosa", "f", "bello", "bella", "a rosa é bonita"], ["🍰", "la", "torta", "f", "dolce", "dolce", "o bolo é doce"], ["🐍", "il", "serpente", "m", "lungo", "lunga", "a cobra é comprida"], ["🔒", "la", "porta", "f", "chiuso", "chiusa", "a porta está fechada"], ["😴", "il", "ragazzo", "m", "stanco", "stanca", "o rapaz está cansado"], ["😡", "il", "signore", "m", "arrabbiato", "arrabbiata", "o senhor está bravo"], ["💪", "l'", "uomo", "m", "forte", "forte", "o homem é forte"], ["💰", "il", "signore", "m", "ricco", "ricca", "o senhor é rico"], ["🍕", "la", "pizza", "f", "buono", "buona", "a pizza é boa"], ["🐷", "il", "maiale", "m", "sporco", "sporca", "o porco está sujo"], ["🪶", "la", "piuma", "f", "leggero", "leggera", "a pena é leve"], ["🏋️", "il", "peso", "m", "pesante", "pesante", "o peso é pesado"], ["🐌", "la", "lumaca", "f", "lento", "lenta", "a lesma é lenta"], ["🏔️", "la", "montagna", "f", "alto", "alta", "a montanha é alta"], ["⚽", "la", "palla", "f", "rotondo", "rotonda", "a bola é redonda"], ["🍋", "il", "limone", "m", "aspro", "aspra", "o limão é azedo"]].map(([e,art,no,g,am,af,pt])=>{const su=art.endsWith("'")?art+no:art+' '+no,target=g==='f'?af:am,other=g==='f'?am:af;
-  return{lvl:12,e,no,g,target,other,am,art:'',it:su+' è '+target,cap:su+' è …',pt,alt:[],audio:'f12/'+slA(no)+'-'+slA(am)}});
+  return{lvl:12,e,no,g,target,other,am,art:'',it:su+' è '+target,cap:su+' è … ('+pt.split(/ (?:é|está) /).pop()+')',pt,alt:[],audio:'f12/'+slA(no)+'-'+slA(am)}});
 const CONVO=[["Come ti chiami?", "Como você se chama?", "nome", "Mi chiamo Luca.", "Eu me chamo Luca."], ["Di dove sei?", "De onde você é?", "origem", "Sono brasiliano, di San Paolo.", "Sou brasileiro, de São Paulo."], ["Quanti anni hai?", "Quantos anos você tem?", "idade", "Ho quarant'anni.", "Tenho quarenta anos."], ["Dove abiti?", "Onde você mora?", "casa", "Abito a Guarulhos.", "Moro em Guarulhos."], ["Che lavoro fai?", "Com o que você trabalha?", "trabalho", "Faccio l'ingegnere.", "Sou engenheiro."], ["Parli italiano?", "Você fala italiano?", "fala", "Sì, parlo un po' di italiano.", "Sim, falo um pouco de italiano."], ["Come stai?", "Como você está?", "estado", "Sto bene, grazie.", "Estou bem, obrigado."], ["Sei sposato?", "Você é casado?", "casado", "Sì, sono sposato.", "Sim, sou casado."], ["Hai figli?", "Você tem filhos?", "filhos", "Sì, ho due figli.", "Sim, tenho dois filhos."], ["Hai fratelli?", "Você tem irmãos?", "irmaos", "Ho un fratello e una sorella.", "Tenho um irmão e uma irmã."], ["Ti piace l'Italia?", "Você gosta da Itália?", "gosto", "Sì, mi piace molto.", "Sim, gosto muito."], ["Che cosa ti piace fare?", "O que você gosta de fazer?", "hobby", "Mi piace cantare.", "Gosto de cantar."], ["Dove lavori?", "Onde você trabalha?", "ondetrab", "Lavoro a San Paolo.", "Trabalho em São Paulo."], ["Perché studi l'italiano?", "Por que você estuda italiano?", "porque", "Perché mi piace viaggiare.", "Porque gosto de viajar."], ["Piacere!", "Prazer!", "prazer", "Piacere mio!", "O prazer é meu!"]].map(([q,qpt,key,ans,apt])=>({lvl:13,q,qpt,key,it:ans,pt:apt,art:'',alt:[],audio:'f13/a-'+key,qaudio:'f13/q-'+key}));
 const ADJWORDS=new Set(ADJS.flatMap(a=>[a.am,a.target,a.other]).map(x=>pkey(norm(x))));
 function checkA(heard,w){const keys=norm(heard).split(' ').filter(Boolean).map(pkey),t=pkey(w.target),o=pkey(w.other);
@@ -649,6 +698,96 @@ function deck24(){const o=[];for(const [sid,title,npc,steps] of shuffle(S24.slic
   else{const mk=l=>({lvl:'t',label:l,it:l,art:'',pt:'',alt:[]});const tgt={...mk(st[3]),pt:st[1]+' — '+st[2],audio:'f24/'+sid+'-'+i+'-npc'};
     o.push({...tgt,title,listen:true,story:true,choices:shuffle([tgt,...st[4].map(mk)])})}})}return o}
 const A2L=[21,22,23,24];
+
+/* ---------- revisão: as lições anteriores voltam dentro da lição nova ---------- */
+const REV_T={1:1,2:'n',3:2,4:'c',5:3,6:6,7:7,8:8,9:9,10:10,11:11,12:12,14:14,15:15,18:18,19:19,20:20,21:21,22:22,23:23};
+function reviewPool(L){if(L>=21&&L<=24)return [12,14,15,18,19,20,...A2L.filter(x=>x<L&&REV_T[x])];return Object.keys(REV_T).map(Number).filter(x=>x<L&&x<=20)}
+function revItem(L){const r7=Math.floor(Math.random()*7);switch(L){
+  case 14:return mk14(r7,pick1(PRED));case 15:return mk15(pick1(VERBS15),r7);case 18:return mk18(pick1(IRR),r7);
+  case 20:return Math.random()<.6?mkLike(pick1(LIKES),Math.random()<.5):mkNeg(pick1(NEG20));
+  case 21:return mkPP(pick1(V21),r7,21);case 22:return mk22(pick1(V22),Math.floor(Math.random()*SUBJ22.length));case 23:return mkPP(pick1(V23),r7,23);
+  default:return target(REV_T[L])}}
+function addReview(d,L){if([1,2,13,17,24,50,99].includes(L))return d;const pool=reviewPool(L);if(!pool.length)return d;
+  const wt=pool.map(l=>{const p=pctOf(l);return p===0?25:Math.max(8,105-p)}),tot=wt.reduce((a,b)=>a+b,0);   // o que está fraco volta mais
+  const n=Math.max(1,Math.min(4,Math.round(d.length*.2))),out=d.slice(0,d.length-n);
+  for(let i=0;i<n;i++){let r=Math.random()*tot,k=0;while(k<wt.length-1&&r>wt[k]){r-=wt[k];k++}const w=revItem(pool[k]);if(!w)continue;
+    out.splice(1+Math.floor(Math.random()*out.length),0,{...w,review:pool[k]})}
+  return out}
+const revName=L=>L>20&&L<50?'A2 · Lição '+(L-20):'Fase '+L;
+function tagReview(w){if(w.review)$('ask').textContent='🔁 Revisão · '+revName(w.review)+' — '+$('ask').textContent}
+
+/* ---------- dicionário de cada lição ---------- */
+const R7=[0,1,2,3,4,5,6];
+function dictOf(L){const H=(h,m)=>mkH(h,m,HOURS.find(x=>x[0]===h&&x[1]===m)[2]),say17=S=>S.flatMap(([sid,title,npc,steps],si)=>steps.map((st,i)=>st[0]==='say'?{lvl:17,title,npc,q:st[1],qpt:st[2],task:st[3],taskPt:st[4],it:st[5],pats:st[6],hint:st[7],art:'',alt:[],pt:st[4],audio:(S===S24?'f24/':'f17/')+sid+'-'+i+'-ans'}:null).filter(Boolean));
+  const vf=t=>VERBS15.find(v=>v[2]===t);
+  switch(L){
+  case 1:return[['Palavras','',WORDS]];
+  case 2:return[['1 a 20','',[...Array(20)].map((_,i)=>mkN(i+1))],['21 a 29','Antes de “uno” e “otto” a vogal cai: ventuno, ventotto.',[...Array(9)].map((_,i)=>mkN(21+i))],
+    ['Dezenas','',[30,40,50,60,70,80,90,100].map(mkN)],['Exemplos','Dezena + unidade, tudo junto: quarantasette.',[33,47,51,68,72,85,98].map(mkN)]];
+  case 3:return[['Do singular para o plural','Masculino -o → -i · feminino -a → -e · -e → -i.',NOUNS2.map(no=>mk2(no,2))]];
+  case 4:return[['Cores','',CORES.map(mkC)]];
+  case 5:return[['Um e três','A cor concorda com o objeto: rosso, rossa, rossi, rosse. Blu, rosa e viola não mudam.',NOUNS3.flatMap((no,i)=>{const c=COLORS[i%COLORS.length];return[mk3(no,c,1),mk3(no,c,3)]})]];
+  case 6:return[['Comidas e bebidas','',FOOD]];case 7:return[['Família e pessoas','',PEOPLE]];case 8:return[['Ações','',VERBS]];
+  case 9:return[['Onde está?','',POS9.map(q=>mk9('🍎',q[0]))]];
+  case 10:return[['Frases completas','',POS9.flatMap((q,i)=>[mk10(SUBJ10[i%SUBJ10.length],q[0]),mk10(SUBJ10[(i+3)%SUBJ10.length],q[0])])]];
+  case 11:return[['Cumprimentos','',GREET]];case 12:return[['Adjetivos','O adjetivo concorda: il nonno è vecchio · la nonna è vecchia.',ADJS]];
+  case 13:return[['Perguntas e respostas','',CONVO]];
+  case 14:return[['Essere (ser / estar)','',R7.map(pi=>mk14(pi,PRED.find(p=>p[1]==='e')))],['Avere (ter)','',R7.map(pi=>mk14(pi,PRED.find(p=>p[1]!=='e')))],['Expressões','',PRED.map(pr=>mk14(0,pr))]];
+  case 15:return[['Modelo -are','',R7.map(pi=>mk15(vf('are'),pi))],['Modelo -ere','',R7.map(pi=>mk15(vf('ere'),pi))],['Modelo -ire','',R7.map(pi=>mk15(vf('ire'),pi))],['Todos os verbos','',VERBS15.map(v=>mk15(v,0))]];
+  case 16:return[['Perguntas úteis','',Q16]];case 17:return[['Situações','',say17(S17)]];
+  case 18:return IRR.map(v=>[v[0]+' ('+v[2]+')','',R7.map(pi=>mk18(v,pi))]);
+  case 19:return[['Horas','Uma hora: “è l’una”. As outras: “sono le…”. :15 e un quarto · :30 e mezza · :45 meno un quarto.',[[1,0],[3,0],[3,10],[3,15],[3,20],[3,30],[3,45],[12,0]].map(([h,m])=>H(h,m))],
+    ['Dias da semana','',DAYS.map(mkD)],['Meses','',MONTHS.map(mkM)],['Datas','O dia 1 é “il primo”.',DATES.slice(0,10).map(d=>mkDt(...d))]];
+  case 20:return[['Gosto 👍','Uma coisa: mi piace · várias: mi piacciono.',LIKES.map(x=>mkLike(x,false))],['Não gosto 👎','',LIKES.slice(0,6).map(x=>mkLike(x,true))],['Frases de sobrevivência','',NEG20.map(mkNeg)]];
+  case 21:return[['Modelo: mangiare','Passado = avere + particípio (-ato, -uto, -ito).',R7.map(pi=>mkPP(V21[1],pi,21))],['Todos os verbos','',V21.map(v=>mkPP(v,0,21))]];
+  case 22:return[['Modelo: andare','Com essere o particípio concorda: andato, andata, andati, andate.',SUBJ22.map((_,i)=>mk22(V22[0],i))],['Todos os verbos','',V22.map(v=>mk22(v,0))]];
+  case 23:return[['Particípios irregulares','',V23.map(v=>mkPP(v,0,23))],['Modelo: fare','',R7.map(pi=>mkPP(V23[0],pi,23))]];
+  case 24:return[['Contar o dia de ontem','',say17(S24)]];
+  default:return[]}}
+const dictKey=L=>'italiano-dict-'+L;
+function dictDone(L){try{return JSON.parse(localStorage.getItem(dictKey(L))||'[]')}catch(e){return[]}}
+function dictTotal(L){return new Set(dictOf(L).flatMap(x=>x[2]).map(w=>full(w))).size}
+function hintOfW(said,w){try{return (w.lvl===21||w.lvl===22||w.lvl===23)?checkPP(said,w).hint:w.lvl===20?check20(said,w).hint:w.lvl===19?check19(said,w).hint:w.lvl===18?check18(said,w).hint:w.lvl===17?check17(said,w).hint:w.lvl===15?check15(said,w).hint:w.lvl===14?check14(said,w).hint:w.lvl===13?checkQ(said,w).hint:w.lvl===12?checkA(said,w).hint:w.lvl===8?checkV(said,w).hint:w.lvl===9?checkW(said,w).hint:w.lvl===10?checkX(said,w).hint:w.lvl==='n'?checkN(said,w).hint:w.lvl===3?check3(said,w).hint:w.lvl===2?check2(said,w).hint:''}catch(e){return''}}
+let lsLevel=0,lsFrom='menu',prRec=null;
+const mkEl=(t,c,tx)=>{const d=document.createElement(t);if(c)d.className=c;if(tx!=null)d.textContent=tx;return d};
+function openLesson(L,btn){lsLevel=L;lsFrom=L>20&&L<50?'menuA2':'menu';const b=btn.querySelector('b'),sp=btn.querySelector('span span');
+  $('lsTitle').textContent=(L>20&&L<50?'A2 · ':'')+(b?b.textContent:'Lição');$('lsSub').textContent=sp?sp.textContent:'';
+  const dn=dictDone(L).length,tt=dictTotal(L),p=pctOf(L);$('lsLearnRec').textContent=dn?dn+' de '+tt+' praticadas':(p?'':'👉 Comece por aqui');
+  $('lsPlayRec').textContent=p?'Nota '+p+'% · '+stars(p):'Ainda não jogado';
+  $(lsFrom).hidden=true;$('lessonSheet').hidden=false}
+$('lsBack').addEventListener('click',()=>{$('lessonSheet').hidden=true;$(lsFrom).hidden=false;showRecs()});
+$('lsPlay').addEventListener('click',()=>{level=lsLevel;$('lessonSheet').hidden=true;begin()});
+$('lnPlay').addEventListener('click',()=>{stopPractice();level=lsLevel;$('learnPanel').hidden=true;begin()});
+$('lnBack').addEventListener('click',()=>{stopPractice();$('learnPanel').hidden=true;openLesson(lsLevel,document.querySelector('.lv[data-level="'+lsLevel+'"]'))});
+$('lsLearn').addEventListener('click',()=>{unlockAudio();openLearn(lsLevel)});
+function openLearn(L){const body=$('lnBody');body.innerHTML='';$('lnTitle').textContent='📖 '+$('lsTitle').textContent+($('lsSub').textContent?' · '+$('lsSub').textContent.split(':')[0]:'');
+  const done=new Set(dictDone(L)),seen=new Set();
+  for(const [title,note,items] of dictOf(L)){const sec=mkEl('div','dsec');sec.append(mkEl('h3','',title));if(note)sec.append(mkEl('p','',note));const g=mkEl('div','dgrid');
+    for(const w of items){const key=full(w);if(seen.has(key))continue;seen.add(key);g.append(dcard(w,key,done.has(key),L))}sec.append(g);body.append(sec)}
+  dictProg(L);$('lessonSheet').hidden=true;$('learnPanel').hidden=false;$('learnPanel').querySelector('.sheet').scrollTop=0}
+function dictProg(L){$('lnProg').textContent='✓ '+dictDone(L).length+' de '+dictTotal(L)+' praticadas'}
+function dcard(w,key,isDone,L){const c=mkEl('div','dcard'+(isDone?' done':''));const top=mkEl('button','dtap');top.type='button';top.setAttribute('aria-label','Ouvir '+key);
+  if(w.lvl===13||w.lvl===17){top.append(mkEl('span','dq','💬 '+w.q),mkEl('small','',w.qpt||''))}else{const p=mkEl('div','pic mini');renderInto(w,p);top.append(p)}
+  top.addEventListener('click',()=>{stopPractice();unlockAudio();say(w)});
+  const fb=mkEl('p','dfb','');const mic=mkEl('button','dmic','🎤 Repetir');mic.type='button';mic.addEventListener('click',()=>practice(w,key,c,fb,mic,L));
+  c.append(top,mkEl('b','dit',key),mkEl('small','dpt',w.lvl===13||w.lvl===17?(w.taskPt||w.pt||''):(w.pt||'')),mic,fb);return c}
+function markDone(L,key,card){const a=dictDone(L);if(!a.includes(key)){a.push(key);try{localStorage.setItem(dictKey(L),JSON.stringify(a))}catch(e){}}card.classList.add('done');dictProg(L)}
+function stopPractice(){if(prRec){const r=prRec;prRec=null;try{r.onend&&r.onend()}catch(e){}try{r.abort()}catch(e){}}}
+function practice(w,key,card,fb,btn,L){stopPractice();
+  const judge=(said,alts)=>{const ok=alts.some(t=>t&&isRight(t,w));emit('ans',{level:L,it:w.it,ok,learn:true});
+    if(ok){fb.className='dfb ok';fb.textContent='✓ Perfetto!';sRight();markDone(L,key,card)}
+    else{const h=hintOfW(said,w);fb.className='dfb no';fb.textContent='Ouvi “'+said.trim()+'”'+(h?' · '+h:' · tente de novo');sWrong()}};
+  if(!SR){const v=prompt('Escreva em italiano:',''); if(v&&v.trim())judge(v,[v]);return}
+  try{player.pause()}catch(e){}stopBuf();micSession();
+  const r=new SR();prRec=r;r.lang='it-IT';r.interimResults=true;r.maxAlternatives=5;r.continuous=false;
+  let alts=[],first='',ok=false,fin=false;btn.classList.add('on');btn.textContent='🎙️ Ouvindo…';fb.className='dfb';fb.textContent='';
+  const finish=()=>{if(fin)return;fin=true;if(prRec===r)prRec=null;btn.classList.remove('on');btn.textContent='🎤 Repetir';playSession();
+    if(ok)judge(first,[first]);else if(first)judge(first,alts);else{fb.className='dfb';fb.textContent='Não ouvi. Toque em 🎤 e fale de novo.'}};
+  r.onresult=e=>{alts=[];for(let i=0;i<e.results.length;i++){const res=e.results[i];for(let k=0;k<res.length;k++)alts.push(res[k].transcript)}
+    const joined=[...e.results].map(x=>x[0].transcript).join(' ');alts.unshift(joined);first=joined;
+    const hit=alts.find(t=>t&&isRight(t,w));if(hit){ok=true;first=hit;try{r.abort()}catch(_){}finish()}};
+  r.onend=finish;r.onerror=e=>{if(e.error==='not-allowed'||e.error==='service-not-allowed'){fb.className='dfb no';fb.textContent='O microfone está bloqueado para este site.';fin=true;prRec=null;btn.classList.remove('on');btn.textContent='🎤 Repetir';playSession();return}finish()};
+  try{r.start()}catch(e){finish();return}setTimeout(()=>{if(!fin)try{r.stop()}catch(_){}},8000)}
 function check20(heard,w){const t=qnorm(heard);
   if(w.k==='n'){if(w.pats.some(r=>new RegExp(r).test(t)))return{ok:true};return{ok:false,hint:w.hint}}
   const mi=/\bmi piac/.test(t),non=/\bnon\b/.test(t),noun=new RegExp('\\b'+w.key).test(t),plOk=w.pl?/\bpiacciono\b/.test(t):/\bpiace\b/.test(t);
@@ -884,11 +1023,11 @@ function show(){const w=deck[idx];phase='ask';helped=false;tried=false;
   document.body.classList.toggle('listen',!!w.listen);if(w.listen)document.body.classList.remove('convo');
   if(w.listen&&w.read){drawOpts(w);const a=$('ask');a.textContent='';const sb=document.createElement('span');sb.className='secbadge';sb.textContent='📖 Leitura';
     const rb=document.createElement('span');rb.className='readbox';rb.textContent=w.rtext;a.append(rb,sb,document.createTextNode(w.q));a.hidden=false;$('answer').hidden=true;$('ptxt').hidden=true;$('heard').textContent='';hud();return}
-  if(w.listen){drawOpts(w);$('ask').textContent=w.askTxt?w.askTxt:w.story?w.title+' · 🎧 ouça e toque na resposta':w.follow?'🎧 Ouça a resposta e toque na certa':level===99?'Ouça e toque na figura certa':'🎧 Rodada de escuta: toque na figura certa';$('ask').hidden=false;$('answer').hidden=true;$('ptxt').hidden=true;$('heard').textContent='';hud();setTimeout(()=>{if(phase==='ask')playIt()},300);return}
+  if(w.listen){drawOpts(w);$('ask').textContent=w.askTxt?w.askTxt:w.story?w.title+' · 🎧 ouça e toque na resposta':w.follow?'🎧 Ouça a resposta e toque na certa':level===99?'Ouça e toque na figura certa':'🎧 Rodada de escuta: toque na figura certa';$('ask').hidden=false;tagReview(w);$('answer').hidden=true;$('ptxt').hidden=true;$('heard').textContent='';hud();setTimeout(()=>{if(phase==='ask')playIt()},300);return}
   document.body.classList.toggle('convo',!!w.qaudio);$('replay').textContent=w.lvl===17?'🔁 Repetir':w.qaudio?'🔁 Repetir pergunta':'🔊 Ouvir de novo';
   if(w.qaudio)setTimeout(()=>{if(phase==='ask'&&deck[idx]===w)say({...w,audio:w.qaudio,it:w.q},autoListen)},350);
   else if(!w.write)setTimeout(()=>{if(deck[idx]===w)autoListen()},450);
-  drawPic(w);$('pic').classList.remove('pop','shake');void $('pic').offsetWidth;$('pic').classList.add('pop');
+  drawPic(w);tagReview(w);$('pic').classList.remove('pop','shake');void $('pic').offsetWidth;$('pic').classList.add('pop');
   $('ask').hidden=false;$('answer').hidden=true;$('ptxt').hidden=true;$('heard').textContent='';$('badge').hidden=true;$('hear').classList.remove('used');
   $('typeIn').value='';$('mic').disabled=false;hud();
   if(level===50){const sec=w.write?'✍️ Escrita · digite':'🎤 Fala · sem ajuda';$('ask').textContent=sec+' — '+$('ask').textContent;
@@ -964,11 +1103,11 @@ function choose(b,ch){if(phase!=='ask'||state!=='play')return;phase='done';const
 
 /* ---------- fluxo ---------- */
 function begin(){ac();try{AC&&AC.resume()}catch(e){};clearTimeout(nextT);TIME=({1:20,2:15,3:25,4:15,5:30,6:20,7:20,8:25,9:15,10:30,11:20,12:20,13:35,14:25,15:20,16:25,17:35,18:20,19:20,20:25,21:25,22:25,23:25,24:40,50:30,99:15})[level];best=bestOf(level);$('lvlChip').textContent=level===99?'Escuta':level===50?'Teste A1':level>=21?'A2 · Lição '+(level-20):'Fase '+level;document.body.classList.toggle('exam',level===50);
-  deck=level===24?deck24():level===23?deckPP(V23,23,PER_GAME):level===22?deck22(PER_GAME):level===21?deckPP(V21,21,PER_GAME):level===50?deckTest():level===20?deck20():level===19?deck19():level===18?deck18(PER_GAME):level===17?deck17():level===16?shuffle(Q16.slice()):level===15?deck15(PER_GAME):level===14?deck14(PER_GAME):level===13?shuffle(CONVO.slice()):level===12?shuffle(ADJS.slice()).slice(0,PER_GAME):level===11?shuffle(GREET.slice()).slice(0,PER_GAME):level===99?deckL(PER_GAME).map(w=>({...w,listen:true})):level===10?deck10(PER_GAME):level===9?deck9(PER_GAME):level===8?shuffle(VERBS.slice()):level===7?shuffle(PEOPLE.slice()).slice(0,PER_GAME):level===6?shuffle(FOOD.slice()).slice(0,PER_GAME):level===5?deck3(PER_GAME):level===4?deckC():level===3?deck2(PER_GAME):level===2?deckN():shuffle(WORDS.slice()).slice(0,PER_GAME);idx=0;score=0;lives=LIVES;hits=0;missed=[];res=[];t0=Date.now();nHelp=0;nRetry=0;emit('start',{});
+  deck=level===24?deck24():level===23?deckPP(V23,23,PER_GAME):level===22?deck22(PER_GAME):level===21?deckPP(V21,21,PER_GAME):level===50?deckTest():level===20?deck20():level===19?deck19():level===18?deck18(PER_GAME):level===17?deck17():level===16?shuffle(Q16.slice()):level===15?deck15(PER_GAME):level===14?deck14(PER_GAME):level===13?shuffle(CONVO.slice()):level===12?shuffle(ADJS.slice()).slice(0,PER_GAME):level===11?shuffle(GREET.slice()).slice(0,PER_GAME):level===99?deckL(PER_GAME).map(w=>({...w,listen:true})):level===10?deck10(PER_GAME):level===9?deck9(PER_GAME):level===8?shuffle(VERBS.slice()):level===7?shuffle(PEOPLE.slice()).slice(0,PER_GAME):level===6?shuffle(FOOD.slice()).slice(0,PER_GAME):level===5?deck3(PER_GAME):level===4?deckC():level===3?deck2(PER_GAME):level===2?deckN():shuffle(WORDS.slice()).slice(0,PER_GAME);deck=addReview(deck,level);idx=0;score=0;lives=LIVES;hits=0;missed=[];res=[];t0=Date.now();nHelp=0;nRetry=0;emit('start',{});
   if(level<=12||level===14||level===15||level===18||level===19||(level>=21&&level<=23)){let run=0;deck=deck.map((w,i)=>{const L=i>0&&run<2&&Math.random()<.33;run=L?run+1:0;return L?{...w,listen:true,audio:w.audioL||w.audio,choices:shuffle([w,...variants(w)])}:w})}
-  state='play';$('menu').hidden=true;$('menuA2').hidden=true;$('home').hidden=true;$('over').hidden=true;$('note').textContent=SR?'':'Este navegador não reconhece voz. Digite a palavra.';showType(!SR);unlockAudio();autoBlocked=false;show();
+  state='play';$('menu').hidden=true;$('menuA2').hidden=true;$('home').hidden=true;$('lessonSheet').hidden=true;$('learnPanel').hidden=true;$('over').hidden=true;$('note').textContent=SR?'':'Este navegador não reconhece voz. Digite a palavra.';showType(!SR);unlockAudio();autoBlocked=false;show();
   if(deck[0]&&deck[0].lvl!==13&&!deck[0].write)autoListen();}   // 1ª figura: liga o microfone ainda dentro do toque
-document.querySelectorAll('.lv[data-level]').forEach(b=>b.addEventListener('click',()=>{level=+b.dataset.level;begin()}));$('again').addEventListener('click',begin);
+document.querySelectorAll('.lv[data-level]').forEach(b=>b.addEventListener('click',()=>{const L=+b.dataset.level;if(L===50||L===99){level=L;begin();return}openLesson(L,b)}));$('again').addEventListener('click',begin);
 $('toMenu').addEventListener('click',()=>{$('over').hidden=true;$(level>=21&&level<=40?'menuA2':'menu').hidden=false;state='menu';showRecs()});
 function bestOf(l){try{return +localStorage.getItem('italiano-f'+l+'-best')||0}catch(e){return 0}}
 try{if(!localStorage.getItem('italiano-migr3')){for(let l=1;l<=13;l++){const b=+localStorage.getItem('italiano-f'+l+'-best')||0,n=l===4?11:l===13?15:20;
@@ -1049,7 +1188,7 @@ function tick(now){const dt=Math.min(.1,(now-(last||now))/1000);last=now;
 requestAnimationFrame(tick);
 hud();
 addEventListener('resize',()=>{if(document.body.classList.contains('listen'))fitOpts()});
-window.__ita={deck:()=>deck,type:v=>{$('typeIn').value=v;$('typeForm').requestSubmit()},st:()=>({state,phase,idx,score,lives,hits,word:deck[idx]&&deck[idx].it,w:deck[idx]}),matches,check14,check15,check17,deck17,deck14,deck15,Q16,follow16,mk14,mk15,PRED,PRON,VERBS15,A16,S17,slg,check18,check19,check20,deck18,deck19,deck20,mk18,mkH,mkD,mkM,mkDt,mkLike,mkNeg,IRR,HOURS,DAYS,MONTHS,DATES,V21,V22,V23,SUBJ22,S24,mkPP,mk22,checkPP,check17,deck24,deck22,deckPP,LIKES,NEG20,SPELL,PHONE,pctOf,histOf,deckTest,READ,testRes,res:()=>res,refresh:()=>showRecs(),check2,check3,checkN,checkC,checkA,checkQ,GREET,ADJS,CONVO,NUMS,deckL,variants,checkV,checkW,checkX,scene,FOOD,PEOPLE,VERBS,tintedCopy,WORDS,NOUNS2,NOUNS3,COLORS};
+window.__ita={deck:()=>deck,type:v=>{$('typeIn').value=v;$('typeForm').requestSubmit()},st:()=>({state,phase,idx,score,lives,hits,word:deck[idx]&&deck[idx].it,w:deck[idx]}),matches,check14,check15,check17,deck17,deck14,deck15,Q16,follow16,mk14,mk15,PRED,PRON,VERBS15,A16,S17,slg,check18,check19,check20,deck18,deck19,deck20,mk18,mkH,mkD,mkM,mkDt,mkLike,mkNeg,IRR,HOURS,DAYS,MONTHS,DATES,V21,V22,V23,SUBJ22,S24,mkPP,mk22,checkPP,check17,deck24,deck22,deckPP,LIKES,NEG20,SPELL,PHONE,pctOf,histOf,deckTest,READ,testRes,res:()=>res,dictOf,addReview,openLearn,isRight,refresh:()=>showRecs(),check2,check3,checkN,checkC,checkA,checkQ,GREET,ADJS,CONVO,NUMS,deckL,variants,checkV,checkW,checkX,scene,FOOD,PEOPLE,VERBS,tintedCopy,WORDS,NOUNS2,NOUNS3,COLORS};
 if('serviceWorker' in navigator){addEventListener('load',()=>{navigator.serviceWorker.register('../sw.js',{scope:'../'}).catch(()=>{})})}
 // Aberto pelo Fliperama (?hub) mostra "voltar aos jogos"; aberto pelo link próprio funciona como app separado
 (()=>{let hub=false;try{if(new URLSearchParams(location.search).has('hub'))sessionStorage.setItem('ita-hub','1');hub=sessionStorage.getItem('ita-hub')==='1'}catch(e){}

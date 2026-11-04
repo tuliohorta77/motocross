@@ -155,6 +155,8 @@
   function screenName() {
     const vis = id => { const x = $(id); return x && !x.hidden };
     if (vis('loginPanel')) return 'login';
+    if (vis('learnPanel')) return 'Dicionário · ' + ($('lnTitle') ? $('lnTitle').textContent.replace('📖 ', '') : '');
+    if (vis('lessonSheet')) return 'Escolha: aprender ou desafio';
     if (vis('levelPanel')) return 'Meu nível';
     if (vis('over')) return 'Resultado';
     if (vis('home')) return 'Capa';
@@ -164,7 +166,7 @@
   }
   function onScreen() { const s = screenName(); if (s !== screen) { screen = s; track('screen', null) } }
   const mo = new MutationObserver(onScreen);
-  ['home', 'menu', 'menuA2', 'levelPanel', 'over', 'loginPanel'].forEach(id => { const x = $(id); if (x) mo.observe(x, { attributes: true, attributeFilter: ['hidden'] }) });
+  ['home', 'menu', 'menuA2', 'levelPanel', 'over', 'loginPanel', 'learnPanel', 'lessonSheet'].forEach(id => { const x = $(id); if (x) mo.observe(x, { attributes: true, attributeFilter: ['hidden'] }) });
   const chip = $('lvlChip'); if (chip) mo.observe(chip, { childList: true, characterData: true, subtree: true });
   setInterval(() => { if (user && document.visibilityState === 'visible') track('hb', null) }, 30000);
   setInterval(() => flush(), 45000);
@@ -172,7 +174,7 @@
   addEventListener('online', () => flush());
   addEventListener('parla', e => {
     const d = e.detail || {}; if (!user) return;
-    if (d.type === 'ans') track('ans', { it: d.it, ok: !!d.ok, helped: !!d.helped, tried: !!d.tried, listen: !!d.listen, read: !!d.read, timeout: !!d.timeout }, d.level);
+    if (d.type === 'ans') track('ans', { it: d.it, ok: !!d.ok, helped: !!d.helped, tried: !!d.tried, listen: !!d.listen, read: !!d.read, timeout: !!d.timeout, learn: !!d.learn }, d.level);
     else if (d.type === 'start') track('play', null, d.level);
     else if (d.type === 'game') {
       box.g.push({ lesson: d.level, score: d.score, pct: d.pct, hits: d.hits, total: d.total, helped: d.helped, retries: d.retries, duration_s: d.dur, missed: d.missed, played_at: new Date().toISOString() });
