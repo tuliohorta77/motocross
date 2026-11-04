@@ -44,8 +44,8 @@ body{height:100%;margin:0;overflow:hidden;background:var(--paper);color:var(--in
 .pic{font-size:var(--base,min(34vmin,170px));line-height:1.05;filter:drop-shadow(0 8px 10px rgba(80,50,20,.18));transition:transform .2s}
 .pic.multi{display:grid;grid-template-columns:repeat(var(--c),auto);gap:.06em .14em;font-size:calc(var(--base,min(34vmin,170px))*var(--k));justify-content:center;align-content:center}
 .pic.multi span{line-height:1.05}
-.pic canvas{width:1.05em;height:1.05em;display:block;filter:drop-shadow(0 0 1px rgba(43,33,24,.55)) drop-shadow(0 6px 8px rgba(80,50,20,.18))}
-.pic.single canvas{width:1.15em;height:1.15em}
+.pic canvas,.pic img.tc{width:1.05em;height:1.05em;display:block;filter:drop-shadow(0 0 1px rgba(43,33,24,.55)) drop-shadow(0 6px 8px rgba(80,50,20,.18))}
+.pic.single canvas,.pic.single img.tc{width:1.15em;height:1.15em}
 .pic.pop{animation:pop .35s ease-out}
 .pic.shake{animation:shake .4s}
 @keyframes pop{0%{transform:scale(.6)}70%{transform:scale(1.08)}100%{transform:scale(1)}}
@@ -979,8 +979,8 @@ function tinted(e,hex){const key=e+hex;if(TC[key])return TC[key];const S=180,c=d
     if(white){const v=205+50*t;o=[v,v,v-4]}else if(black){const v=40+85*t;o=[v,v,v+6]}
     else{const bright=(.3*r0+.59*g0+.11*b0)/255>.55,sh=bright?.82+.45*Math.pow(t,.8):.62+.68*Math.pow(t,.8);o=[r0,g0,b0].map(cc=>sh<=1?cc*sh:cc+(255-cc)*(sh-1)*.9)}
     p[i]=o[0];p[i+1]=o[1];p[i+2]=o[2]}
-  x.putImageData(d,0,0);return TC[key]=c}
-function tintedCopy(e,hex){const src=tinted(e,hex),c=document.createElement('canvas');c.width=src.width;c.height=src.height;c.getContext('2d').drawImage(src,0,0);c.setAttribute('aria-hidden','true');return c}
+  x.putImageData(d,0,0);let u='';try{u=c.toDataURL('image/png')}catch(er){}c.width=c.height=0;return TC[key]=u}   // guarda só a imagem: no iPhone, muitas telas de canvas de uma vez somem
+function tintedCopy(e,hex){const u=tinted(e,hex);if(!u){const s=document.createElement('span');s.className='tcf';s.textContent=e;return s}const im=new Image();im.className='tc';im.alt='';im.decoding='async';im.src=u;im.setAttribute('aria-hidden','true');return im}
 function scene(w){const sc=document.createElement('div');sc.className='scene';const add=(cls,html,css)=>{const d=document.createElement('div');d.className=cls;if(html)d.textContent=html;if(css)d.style.cssText=css;sc.append(d);return d};
   add('gnd');const pos=w.pos,obj=w.e;
   if(pos==='sopra'||pos==='sotto'){add('leg','','left:24%');add('leg','','right:24%');add('tbl');add('it',obj,pos==='sopra'?'left:50%;top:44%':'left:50%;top:97%')}
