@@ -149,6 +149,8 @@ form.type button{font-family:var(--display);font-weight:700;font-size:18px;borde
 .dit{font-family:var(--display);font-weight:700;font-size:17px;line-height:1.15;color:var(--ink)}
 .dpt{font-size:12px;font-weight:700;color:var(--muted);line-height:1.2}
 .dmic{border:0;border-radius:12px;padding:8px 6px;font-family:var(--display);font-weight:600;font-size:15px;background:var(--rosso);color:#fff;cursor:pointer;margin-top:2px}
+.drow{display:grid;grid-template-columns:1fr 1fr;gap:6px}.dmic.dwr{background:#6b4f2f}.dit.hid{visibility:hidden}
+.dform{display:flex;gap:4px}.dform input{flex:1;min-width:0;font-size:16px;padding:8px;border:2px solid var(--verde);border-radius:10px;font-family:var(--display)}.dform button{border:0;border-radius:10px;background:var(--verde);color:#fff;font-weight:700;padding:0 10px}
 .dmic.on{background:var(--verde);animation:pulse 1s infinite}
 .dfb{margin:0;font-size:12px;font-weight:800;min-height:1em;line-height:1.25}
 .dfb.ok{color:var(--verde)}.dfb.no{color:var(--rosso)}
@@ -793,7 +795,14 @@ function dcard(w,key,isDone,L){const c=mkEl('div','dcard'+(isDone?' done':''));c
   if(w.lvl===13||w.lvl===17){top.append(mkEl('span','dq','💬 '+w.q),mkEl('small','',w.qpt||''))}else{const p=mkEl('div','pic mini');renderInto(w,p);top.append(p)}
   top.addEventListener('click',()=>{stopPractice();unlockAudio();say(w)});
   const fb=mkEl('p','dfb','');const mic=mkEl('button','dmic','🎤 Repetir');mic.type='button';mic.addEventListener('click',()=>practice(w,key,c,fb,mic,L));
-  c.append(top,mkEl('b','dit',key),mkEl('small','dpt',w.lvl===13||w.lvl===17?(w.taskPt||w.pt||''):(w.pt||'')),mic,fb);return c}
+  const wb=mkEl('button','dmic dwr','✍️ Escrever');wb.type='button';const fm=mkEl('form','dform');fm.hidden=true;const inp=mkEl('input');inp.setAttribute('autocapitalize','off');inp.setAttribute('autocorrect','off');inp.setAttribute('spellcheck','false');inp.placeholder='escreva em italiano';const ok=mkEl('button','','OK');ok.type='submit';fm.append(inp,ok);
+  const it=mkEl('b','dit',key);
+  wb.addEventListener('click',()=>{stopPractice();const on=fm.hidden;fm.hidden=!on;it.classList.toggle('hid',on);if(on){inp.value='';inp.focus()}});
+  fm.addEventListener('submit',e=>{e.preventDefault();const v=inp.value;if(!v.trim())return;const okk=isRight(v,w);emit('ans',{level:L,it:w.it,ok:okk,learn:true,write:true});
+    if(okk){const g=spellNote(v,w);fb.className='dfb ok';fb.textContent='✓ Perfetto!'+(g?' · '+g:'');sRight();markDone(L,key,c);fm.hidden=true;it.classList.remove('hid');inp.blur()}
+    else{const h=hintOfW(v,w);fb.className='dfb no';fb.textContent='Ainda não'+(h?' · '+h:' · tente de novo');sWrong();inp.select()}});
+  const row=mkEl('div','drow');row.append(mic,wb);
+  c.append(top,it,mkEl('small','dpt',w.lvl===13||w.lvl===17?(w.taskPt||w.pt||''):(w.pt||'')),fm,row,fb);return c}
 function markDone(L,key,card){const a=dictDone(L);if(!a.includes(key)){a.push(key);try{localStorage.setItem(dictKey(L),JSON.stringify(a))}catch(e){}}card.classList.add('done');dictProg(L)}
 function stopPractice(){if(prRec){const r=prRec;prRec=null;try{r.onend&&r.onend()}catch(e){}try{r.abort()}catch(e){}}}
 function practice(w,key,card,fb,btn,L){stopPractice();
@@ -981,7 +990,9 @@ function showType(on,now){$('typeForm').hidden=!on;$('kbSub').textContent=on?'ab
 // no iPhone o teclado só abre se o foco vier do próprio toque
 $('kb').addEventListener('click',()=>{const w=deck[idx];if(state==='play'&&w&&w.write){showType(true,true);return}showType($('typeForm').hidden,true)});
 $('typeForm').addEventListener('submit',e=>{e.preventDefault();if(phase!=='ask')return;const v=$('typeIn').value;if(!v.trim())return;heardShow(v);
-  if(isRight(v,deck[idx]))right();else{wrongTry(v);$('typeIn').select()}});
+  const w=deck[idx];if(isRight(v,w)){right();const g=spellNote(v,w);if(g)$('heard').textContent+=' · '+g}else{wrongTry(v);$('typeIn').select()}});
+function spellNote(v,w){if(w.lvl===13||w.lvl===17)return'';const c=t=>String(t).toLowerCase().replace(/[’`´]/g,"'").replace(/[^\p{L}\p{N}' ]/gu,' ').replace(/\s+/g,' ').trim(),a=c(v),b=c(full(w));
+  if(a===b)return'';if(norm(a)===norm(b))return'atenção aos acentos: '+full(w);return'escrita completa: '+full(w)}
 
 /* ---------- megafone ---------- */
 $('hear').addEventListener('click',()=>{if(state!=='play'||phase!=='ask')return;if(listening||rec){killRec();listening=false;micUI()}
@@ -1043,7 +1054,7 @@ function renderInto(w,p){p.innerHTML='';
 function hearts(){const l=Math.max(0,Math.min(LIVES,lives));$('hearts').textContent='❤️'.repeat(l)+'🤍'.repeat(LIVES-l)}
 function hud(){$('pts').innerHTML=score+'<small>pts</small>';hearts();$('count').textContent=(level===24?'Passo ':level>=21&&level<=23?'Verbo ':level===18?'Verbo ':level===19||level===20?'Item ':level===17?'Passo ':level===99||(deck[idx]&&deck[idx].listen)?'Rodada ':level===13||level===16?'Pergunta ':level===2?'Número ':level===4?'Cor ':level>=8?'Frase ':'Palavra ')+Math.min(idx+1,deck.length)+' de '+deck.length}
 function show(){const w=deck[idx];phase='ask';helped=false;tried=false;
-  if(level===50)TIME=w.sec==='L'?45:w.sec==='W'?90:w.sec==='F'?(w.lvl===13?35:25):20;timeLeft=TIME;
+  if(level===50)TIME=w.sec==='L'?45:w.sec==='W'?90:w.sec==='F'?(w.lvl===13?35:25):20;else TIME=w.write?Math.max(baseT,60):baseT;timeLeft=TIME;
   document.body.classList.toggle('reading',!!w.read);
   document.body.classList.toggle('listen',!!w.listen);if(w.listen)document.body.classList.remove('convo');
   if(w.listen&&w.read){drawOpts(w);const a=$('ask');a.textContent='';const sb=document.createElement('span');sb.className='secbadge';sb.textContent='📖 Leitura';
@@ -1055,8 +1066,12 @@ function show(){const w=deck[idx];phase='ask';helped=false;tried=false;
   drawPic(w);tagReview(w);$('pic').classList.remove('pop','shake');void $('pic').offsetWidth;$('pic').classList.add('pop');
   $('ask').hidden=false;$('answer').hidden=true;$('ptxt').hidden=true;$('heard').textContent='';$('badge').hidden=true;$('hear').classList.remove('used');
   $('typeIn').value='';$('mic').disabled=false;hud();
-  if(level===50){const sec=w.write?'✍️ Escrita · digite':'🎤 Fala · sem ajuda';$('ask').textContent=sec+' — '+$('ask').textContent;
-    $('kb').disabled=!w.write&&!!SR;document.body.classList.toggle('writing',!!w.write);$('typeIn').placeholder=w.write?'toque aqui e escreva':'escreva em italiano';if(w.write){if(listening||rec){killRec();listening=false;micUI()}$('mic').disabled=true;$('typeIn').value='';showType(true);$('note').textContent='✍️ Toque na caixa para abrir o teclado e depois em OK. Números podem ser em algarismos (25 dicembre).'}else{$('note').textContent=SR?'':$('note').textContent;showType(!SR)}}else{$('kb').disabled=false;document.body.classList.remove('writing')}}
+  const wasW=document.body.classList.contains('writing'),sec=level===50?(w.write?'✍️ Escrita · digite':'🎤 Fala · sem ajuda'):w.write?'✍️ Escreva em italiano':'';
+  if(sec)$('ask').textContent=sec+' — '+$('ask').textContent;
+  document.body.classList.toggle('writing',!!w.write);$('typeIn').placeholder=w.write?'toque aqui e escreva':'escreva em italiano';
+  if(w.write){if(listening||rec){killRec();listening=false;micUI()}$('mic').disabled=true;$('kb').disabled=false;$('typeIn').value='';showType(true);
+    $('note').textContent='✍️ Toque na caixa para abrir o teclado e depois em OK. Números podem ser em algarismos (25 dicembre).'}
+  else{$('kb').disabled=level===50&&!!SR;$('note').textContent=SR?'':'Este navegador não reconhece voz. Digite a palavra.';if(level===50||wasW)showType(!SR)}}
 function reveal(ok){const w=deck[idx];$('cap').hidden=true;$('ask').hidden=true;$('answer').hidden=false;$('answer').textContent=(w.lvl===13||w.lvl===17)&&ok&&lastSaid?'“'+lastSaid+'”':full(w);$('answer').className='answer '+(ok?'ok':'no');
   $('ptxt').hidden=false;$('ptxt').textContent=(w.lvl===13||w.lvl===17)?(ok?'Exemplo: '+w.it:w.pt):w.pt;$('mic').disabled=true}
 function right(){if(phase!=='ask')return;phase='done';if(deck[idx].lvl===16&&!deck[idx].listen&&level!==50)deck.splice(idx+1,0,follow16(deck[idx]));const pts=helped?2:tried?5:10;res[idx]=pts;score+=pts;if(helped)nHelp++;if(tried)nRetry++;emit('ans',{it:deck[idx].it,ok:true,helped,tried});hits++;sRight();reveal(true);
@@ -1130,9 +1145,15 @@ function choose(b,ch){if(phase!=='ask'||state!=='play')return;phase='done';const
   markOpts();reveal(ok);hud();nextT=setTimeout(next,ok?1500:2600)}
 
 /* ---------- fluxo ---------- */
-function begin(){ac();try{AC&&AC.resume()}catch(e){};clearTimeout(nextT);TIME=({1:20,2:15,3:25,4:15,5:30,6:20,7:20,8:25,9:15,10:30,11:20,12:20,13:35,14:25,15:20,16:25,17:35,18:20,19:20,20:25,21:25,22:25,23:25,24:40,50:30,99:15})[level];best=bestOf(level);$('lvlChip').textContent=level===99?'Escuta':level===50?'Teste A1':level>=21?'A2 · Lição '+(level-20):'Fase '+level;document.body.classList.toggle('exam',level===50);
+let baseT=20;
+// rodadas de escrita: algumas frases do desafio pedem para digitar (sem microfone)
+function markWrite(d,L){if([13,17,24,50,99].includes(L))return d;const c=shuffle(d.map((w,i)=>i).filter(i=>i>0&&!d[i].listen&&w_ok(d[i])));const n=Math.min(3,c.length);
+  return d.map((w,i)=>c.slice(0,n).includes(i)?{...w,write:true}:w)}
+function w_ok(w){return w.lvl!==13&&w.lvl!==17&&!w.qaudio}
+function begin(){ac();try{AC&&AC.resume()}catch(e){};clearTimeout(nextT);TIME=({1:20,2:15,3:25,4:15,5:30,6:20,7:20,8:25,9:15,10:30,11:20,12:20,13:35,14:25,15:20,16:25,17:35,18:20,19:20,20:25,21:25,22:25,23:25,24:40,50:30,99:15})[level];baseT=TIME;best=bestOf(level);$('lvlChip').textContent=level===99?'Escuta':level===50?'Teste A1':level>=21?'A2 · Lição '+(level-20):'Fase '+level;document.body.classList.toggle('exam',level===50);
   deck=level===24?deck24():level===23?deckPP(V23,23,PER_GAME):level===22?deck22(PER_GAME):level===21?deckPP(V21,21,PER_GAME):level===50?deckTest():level===20?deck20():level===19?deck19():level===18?deck18(PER_GAME):level===17?deck17():level===16?shuffle(Q16.slice()):level===15?deck15(PER_GAME):level===14?deck14(PER_GAME):level===13?shuffle(CONVO.slice()):level===12?shuffle(ADJS.slice()).slice(0,PER_GAME):level===11?shuffle(GREET.slice()).slice(0,PER_GAME):level===99?deckL(PER_GAME).map(w=>({...w,listen:true})):level===10?deck10(PER_GAME):level===9?deck9(PER_GAME):level===8?shuffle(VERBS.slice()):level===7?shuffle(PEOPLE.slice()).slice(0,PER_GAME):level===6?shuffle(FOOD.slice()).slice(0,PER_GAME):level===5?deck3(PER_GAME):level===4?deckC():level===3?deck2(PER_GAME):level===2?deckN():shuffle(WORDS.slice()).slice(0,PER_GAME);deck=addReview(deck,level);idx=0;score=0;lives=LIVES;hits=0;missed=[];res=[];t0=Date.now();nHelp=0;nRetry=0;emit('start',{});
-  if(level<=12||level===14||level===15||level===18||level===19||(level>=21&&level<=23)){let run=0;deck=deck.map((w,i)=>{const L=i>0&&run<2&&Math.random()<.33;run=L?run+1:0;return L?{...w,listen:true,audio:w.audioL||w.audio,choices:shuffle([w,...variants(w)])}:w})}
+  deck=markWrite(deck,level);
+  if(level<=12||level===14||level===15||level===18||level===19||(level>=21&&level<=23)){let run=0;deck=deck.map((w,i)=>{const L=i>0&&!w.write&&run<2&&Math.random()<.33;run=L?run+1:0;return L?{...w,listen:true,audio:w.audioL||w.audio,choices:shuffle([w,...variants(w)])}:w})}
   state='play';$('menu').hidden=true;$('menuA2').hidden=true;$('home').hidden=true;$('lessonSheet').hidden=true;$('learnPanel').hidden=true;$('over').hidden=true;$('note').textContent=SR?'':'Este navegador não reconhece voz. Digite a palavra.';showType(!SR);unlockAudio();autoBlocked=false;show();
   if(deck[0]&&deck[0].lvl!==13&&!deck[0].write)autoListen();}   // 1ª figura: liga o microfone ainda dentro do toque
 document.querySelectorAll('.lv[data-level]').forEach(b=>b.addEventListener('click',()=>{const L=+b.dataset.level;if(L===50||L===99){level=L;begin();return}openLesson(L,b)}));$('again').addEventListener('click',begin);
