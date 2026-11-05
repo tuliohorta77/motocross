@@ -149,6 +149,15 @@ form.type button{font-family:var(--display);font-weight:700;font-size:18px;borde
 .dit{font-family:var(--display);font-weight:700;font-size:17px;line-height:1.15;color:var(--ink)}
 .dpt{font-size:12px;font-weight:700;color:var(--muted);line-height:1.2}
 .dmic{border:0;border-radius:12px;padding:8px 6px;font-family:var(--display);font-weight:600;font-size:15px;background:var(--rosso);color:#fff;cursor:pointer;margin-top:2px}
+.free{font-size:16px;line-height:1.3;width:100%;box-sizing:border-box;display:flex;flex-direction:column;gap:8px;text-align:left;font-family:var(--body,inherit)}
+.free .ft{font-family:var(--display);font-size:17px;color:var(--ink)}.free .fpt{color:var(--muted);font-size:13px}
+.free label{display:flex;flex-direction:column;font-size:13px;font-weight:700;color:var(--muted);gap:2px}
+.free input,.free textarea{font-size:17px;padding:9px 10px;border:2px solid var(--verde);border-radius:10px;font-family:inherit;background:#fff;color:var(--ink)}
+.free .wc{text-align:right;color:var(--muted);font-size:12px}
+.fsend{border:0;border-radius:12px;background:var(--verde);color:#fff;font-family:var(--display);font-weight:700;font-size:17px;padding:11px}
+.fres{display:flex;flex-direction:column;gap:3px;font-size:14px}.fres b{font-family:var(--display);font-size:20px}.fres .ok{color:var(--verde)}.fres .no{color:var(--rosso)}
+.ttext.cz span{display:block}.ttext.cz small{display:block;font-size:.6em;color:var(--muted);margin-top:4px}
+.freew .card{justify-content:flex-start;overflow-y:auto}.freew #ask{display:none}.freew .pic{align-self:stretch}
 .drow{display:grid;grid-template-columns:1fr 1fr;gap:6px}.dmic.dwr{background:#6b4f2f}.dit.hid{visibility:hidden}
 .dform{display:flex;gap:4px}.dform input{flex:1;min-width:0;font-size:16px;padding:8px;border:2px solid var(--verde);border-radius:10px;font-family:var(--display)}.dform button{border:0;border-radius:10px;background:var(--verde);color:#fff;font-weight:700;padding:0 10px}
 .dmic.on{background:var(--verde);animation:pulse 1s infinite}
@@ -666,14 +675,70 @@ function deck20(){const likes=shuffle(LIKES.slice()).slice(0,8).map(L=>mkLike(L,
 /* ---------- Teste A1 (simulado no formato da prova) ---------- */
 const READ=[["CHIUSO IL LUNEDÌ", "O que diz a placa?", "Fechado às segundas", "Aberto às segundas", "Fechado aos domingos", "Fecha ao meio-dia"], ["VIETATO FUMARE", "O que diz a placa?", "É proibido fumar", "Área para fumantes", "Vende cigarros", "Proibido entrar"], ["USCITA ➜", "O que indica a placa?", "Saída", "Entrada", "Banheiro", "Caixa"], ["SALDI −30%", "O que diz a vitrine?", "Liquidação com 30% de desconto", "O preço subiu 30%", "A loja fecha às 3:30", "30 produtos novos"], ["Pizza margherita … 8 €\nAcqua … 2 €", "Quanto custam uma margherita e uma água?", "10 €", "8 €", "6 €", "12 €"], ["Ciao Marco! Ci vediamo domani alle otto al bar.\nGiulia", "Quando é o encontro?", "Amanhã às 8", "Hoje às 8", "Amanhã às 18", "Domingo às 8"], ["Treno per Roma\nbinario 4 · partenza 15:20", "De qual plataforma sai o trem?", "Plataforma 4", "Plataforma 15", "Plataforma 20", "Plataforma 2"], ["FARMACIA\naperta dalle 9 alle 19", "Que horas a farmácia fecha?", "Às 19h", "Às 9h", "Ao meio-dia", "Às 21h"], ["Mi chiamo Paolo, ho 35 anni e abito a Milano con mia moglie.", "O que é verdade?", "Paolo mora em Milão com a esposa", "Paolo tem 25 anos", "Paolo mora sozinho", "Paolo é de Roma"], ["Oggi piove. Domani fa bel tempo.", "Como estará o tempo amanhã?", "Tempo bom", "Chuva", "Frio", "Neve"], ["Prenotazione: tavolo per due,\nsabato alle 20:30", "Para quantas pessoas é a reserva?", "2 pessoas", "20 pessoas", "30 pessoas", "4 pessoas"], ["Il volo per Napoli è in ritardo.", "O que aconteceu com o voo?", "Está atrasado", "Foi cancelado", "Está no horário", "Já partiu"], ["Il museo è gratis la prima domenica del mese.", "Quando o museu é grátis?", "No 1º domingo do mês", "Todo domingo", "Na 1ª segunda do mês", "Nunca"], ["Ho comprato il pane, il latte e le uova.", "O que NÃO foi comprado?", "Queijo", "Pão", "Leite", "Ovos"]];
 const SECN={E:'Escuta',L:'Leitura',F:'Fala',W:'Escrita'};
+const PASS_T=75,PASS_P=65;   // corte acima das provas oficiais (CELI Impatto 50%, CILS ≈55%)
 function mkRead(r){const tg={...mkT(r[2]),pt:r[1]+' → '+r[2],listen:true,read:true,rtext:r[0],q:r[1]};tg.choices=shuffle([r[2],r[3],r[4],r[5]].map(mkT));return tg}
 function deckTest(){const r7=()=>Math.floor(Math.random()*7),asL=w=>({...w,listen:true,audio:w.audioL||w.audio,choices:shuffle([w,...variants(w)])});
   const E=shuffle([...shuffle(HOURS.slice()).slice(0,2).map(x=>asL(mkH(...x))),asL(mkN(21+Math.floor(Math.random()*79))),asL(mkN(21+Math.floor(Math.random()*79))),
     asL(mkDt(...pick1(DATES))),follow16(pick1(Q16)),mkSpell(pick1(SPELL)),mkPhone(pick1(PHONE))]).map(w=>({...w,sec:'E',askTxt:'🎧 Ouça e toque na resposta certa'}));
-  const L=shuffle(READ.slice()).slice(0,6).map(mkRead).map(w=>({...w,sec:'L'}));
+  const L=[...shuffle(READ.slice()).slice(0,3).map(mkRead),...shuffle(RTXT.slice()).slice(0,2).flatMap(t=>[mkReadT(t,0),mkReadT(t,1)])].map(w=>({...w,sec:'L'}));
   const F=shuffle([mk14(r7(),pick1(PRED)),mk15(pick1(VERBS15),r7()),mk18(pick1(IRR),r7()),mkH(...pick1(HOURS)),mkLike(pick1(LIKES),Math.random()<.5),pick1(Q16),...shuffle(CONVO.slice()).slice(0,2)]).map(w=>({...w,sec:'F'}));
-  const W=shuffle([mkDt(...pick1(DATES)),mkNeg(pick1(NEG20)),mk15(pick1(VERBS15),r7()),mk14(r7(),pick1(PRED))]).map(w=>({...w,sec:'W',write:true}));
+  const W=[mkForm(),...shuffle([...shuffle(CLOZE.slice()).slice(0,3).map(mkCz),pick1([mkDt(...pick1(DATES)),mkNeg(pick1(NEG20)),mk15(pick1(VERBS15),r7()),mk14(r7(),pick1(PRED))])]).map(w=>({...w,write:true})),mkMsg()].map(w=>({...w,sec:'W'}));
   return [...E,...L,...F,...W]}
+// textos de leitura no formato da prova (aviso, anúncio, mensagem, cartão-postal…), 2 perguntas cada
+const RTXT=[["AFFITTASI\nMonolocale in centro, 2° piano, con balcone.\n500 € al mese. Libero da settembre.\nTel. 333 4567890",[["Quanto custa o aluguel?","500 € por mês","500 € por semana","50 € por mês","5.000 € por ano"],["Quando o apartamento fica livre?","Em setembro","Em dezembro","Agora mesmo","Daqui a sete dias"]]],
+ ["Ciao Anna! Stasera non posso venire a cena, sono malata. Andiamo al cinema sabato? Un bacio, Laura",[["Por que Laura não vai ao jantar?","Está doente","Está trabalhando","Está viajando","Não gosta do restaurante"],["O que Laura propõe?","Ir ao cinema no sábado","Jantar no sábado","Ir ao cinema hoje","Ir à praia no domingo"]]],
+ ["Cara Giulia,\nsono a Firenze con mia sorella. Fa caldo e mangiamo molto gelato! Domani visitiamo il museo.\nA presto, Marta",[["Com quem Marta está?","Com a irmã","Com a mãe","Com Giulia","Sozinha"],["O que elas fazem amanhã?","Visitam o museu","Voltam para casa","Vão à praia","Comem pizza"]]],
+ ["Gentili clienti,\nil negozio è chiuso per ferie dal 10 al 24 agosto.\nRiapriamo lunedì 25 agosto alle 9:00.",[["Por que a loja está fechada?","Férias","Reforma","Feriado nacional","Mudança de endereço"],["Quando a loja reabre?","Segunda, 25 de agosto","Dia 10 de agosto","Dia 24 de agosto","Segunda, 9 de agosto"]]],
+ ["MENÙ DEL GIORNO – 15 €\nPrimo: pasta al pomodoro\nSecondo: pollo con patate\nDolce: tiramisù\nAcqua e caffè inclusi",[["O que está incluído no preço?","Água e café","Vinho","Só a sobremesa","Pão e cerveja"],["Qual é o segundo prato?","Frango com batatas","Macarrão com tomate","Peixe","Tiramisù"]]],
+ ["CORSO DI ITALIANO per stranieri\nOgni martedì e giovedì, dalle 18 alle 20.\nIscrizioni in segreteria. Primo incontro: 3 ottobre.",[["Em que dias é o curso?","Terça e quinta","Segunda e quarta","Sábado e domingo","Só às terças"],["Onde se faz a inscrição?","Na secretaria","Pela internet","Na primeira aula","Por telefone"]]],
+ ["Buongiorno signor Rossi,\nla riunione di domani è alle 10 e non alle 9.\nCordiali saluti,\nElena Bianchi",[["O que mudou?","O horário da reunião","O dia da reunião","O lugar da reunião","A reunião foi cancelada"],["A que horas é a reunião agora?","Às 10","Às 9","Às 19","Às 12"]]],
+ ["MUSEO CIVICO\nAperto da martedì a domenica, 9:00–18:00\nLunedì chiuso\nBiglietto: 8 €, bambini gratis",[["Quando o museu está fechado?","Segunda-feira","Domingo","Terça-feira","Sábado"],["Quanto pagam as crianças?","Nada","8 €","4 €","18 €"]]]];
+function mkReadT(t,qi){const q=t[1][qi];return{...mkRead([t[0],q[0],q[1],q[2],q[3],q[4]]),long:true}}
+// completar a frase (escrita: gramática)
+const CLOZE=[["Io ___ brasiliano.","essere",["sono"]],["Lei ___ due fratelli.","avere",["ha"]],["Noi ___ la pizza.","mangiare",["mangiamo"]],["Domani io ___ al cinema.","andare",["vado"]],
+ ["Mi ___ i gatti.","piacere",["piacciono"]],["Abito ___ Milano.","em",["a"]],["Tu ___ italiano?","parlare",["parli"]],["Le mele sono ___.","rosso",["rosse"]],["Quanti anni ___ tu?","avere",["hai"]],
+ ["Loro ___ a casa alle otto.","tornare",["tornano"]],["Il treno parte ___ nove.","às",["alle"]],["Ci sono tre ___ sul tavolo.","gatto",["gatti"]],["Io non ___ la carne.","mangiare",["mangio"]],["Voi ___ un caffè?","volere",["volete"]],["Mia sorella ___ stanca.","essere",["è","e"]]];
+const mkCz=c=>({lvl:'cz',q:c[0],hint:c[1],ok:c[2],it:c[0].replace('___',c[2][0]),art:'',alt:[],pt:'Completar: '+c[0],e:'✏️',write:true});
+function checkCz(t,w){const k=norm(t).split(' ').filter(Boolean);return{ok:w.ok.some(o=>k.includes(norm(o)))}}
+// produção livre: ficha de inscrição e mensagem curta
+const NAZ=/^(brasilian|italian|argentin|american|portoghes|spagnol|frances|tedesc|ingles|giappones|cines|messican|uruguaian|colombian|cilen|peruvian|canades|russ|svizzer|olandes|belg|austriac|polacc|grec|paraguaian|venezuelan|boliviana?|bolivian|angolan|mozambican|indian|corean|egizian|marocchin|irlandes|scozzes|australian)[aeio]?$/;
+const PROF=/^(ingegner|medic|insegnant|impiegat|student|avvocat|commercial|imprenditor|architett|infermier|cuoc|camerier|programmator|giornalist|pensionat|casaling|operai|dentist|farmacist|commess|segretari|musicist|pittor|autist|poliziott|agricoltor|contadin|meccanic|elettricist|disoccupat|manager|consulent|ragionier|venditor|attor|attric|cantant|veterinari|psicolog|professor|maestr|ricercat|economist|tecnic|direttor|amministrator|dirigent|fisioterapist|biolog|chimic|geometr|designer|informatic|sviluppator|barist|parrucchier|estetist|militar|vigil|pompier|pilot|commercialist|imprenditric|libero)\w*$/;
+function gradeForm(v){const n=x=>norm(x||'').trim(),f=[];let pts=0;
+  const okN=/^[a-zà-ú' ]{2,}$/i.test((v.nome||'').trim())&&/^[a-zà-ú' ]{2,}$/i.test((v.cognome||'').trim());f.push([okN,'Nome e cognome']);
+  const okZ=n(v.naz).split(' ').some(t=>NAZ.test(t));f.push([okZ,'Nazionalità'+(okZ?'':' — ex.: brasiliano / brasiliana')]);
+  const e=n(v.eta).replace(/\banni\b/,'').trim().replace(/ /g,''),okE=NUMS.some(x=>norm(x).replace(/ /g,'')===e);f.push([okE,'Età in lettere'+(okE?'':' — ex.: quarantadue')]);
+  const okC=/^[a-zà-ú' ]{2,}$/i.test((v.citta||'').trim());f.push([okC,'Città']);
+  const okP=n(v.prof).split(' ').some(t=>PROF.test(t));f.push([okP,'Professione'+(okP?'':' — ex.: ingegnere, impiegato, studente')]);
+  pts=f.filter(x=>x[0]).length*2;return{pts,f}}
+let ITVOC=null;
+function itVocab(){if(ITVOC)return ITVOC;const S=new Set(('ciao caro cara cari salve buongiorno buonasera mi chiamo sono io tu lui lei noi voi loro il lo la i gli le un uno una di a da in con su per tra fra e ma o anche non che chi come dove quando perché perche molto poco tanto tutto tutti ogni mio mia miei mie tuo tua suo sua nostro vostro questo questa quello quella ho hai ha abbiamo avete hanno sei è siamo siete abito vivo lavoro faccio studio parlo mi piace piacciono piacere amo adoro anni anno città lavoro casa famiglia moglie marito figli figlio figlia fratello sorella amici amico amica italiano italiana brasiliano brasiliana ingegnere bene grazie presto baci bacio abbraccio saluti ci vediamo vediamo spero scrivere scrivimi rispondi domani oggi sempre spesso adesso ora qui là la qua al alla allo ai alle del della dello dei delle nel nella sul sulla dal dalla mare montagna cinema musica calcio leggere cantare ballare cucinare viaggiare correre nuotare giocare suonare chitarra fisarmonica sport libri film cibo pizza pasta caffè vino tempo libero weekend fine settimana sabato domenica ingegneria azienda ufficio scuola università studente insegnante medico grande piccolo bello bella nuovo nuova contento contenta felice').split(' '));
+  const add=t=>norm(t).split(' ').forEach(x=>x&&S.add(x));[WORDS,FOOD,PEOPLE,VERBS,GREET,ADJS].forEach(a=>a.forEach(w=>add(w.it||'')));CONVO.forEach(c=>add(c[3]));Object.values(window.MIX||{}).forEach(a=>a.forEach(w=>add(w.it)));
+  NUMS.forEach(add);VERBS15.forEach(v=>{add(v[0]);['o','i','a','e','iamo','ate','ete','ite','ano','ono'].forEach(e=>S.add(norm(v[1]+e)))});IRR.forEach(v=>v[3].forEach(add));return ITVOC=S}
+function gradeMsg(raw){const t=norm(raw),words=raw.trim().split(/\s+/).filter(Boolean),n=words.length,f=[];
+  const V=itVocab(),known=words.filter(w=>/^[A-ZÀ-Ú]/.test(w)||norm(w).split(' ').every(x=>!x||V.has(x))).length,ratio=n?known/n:0;
+  const has=re=>re.test(t);
+  const c=[[has(/^(ciao|cara?|cari|salve|buongiorno|buonasera|gentile)\b/),'Cumprimento no início (Ciao Luca!)'],[has(/\bmi chiamo \w+|\bsono [a-z]+ (e|ho|abito|vivo)|\bio sono [a-z]+/),'Apresentação (Mi chiamo…)'],
+    [has(/\b(abito|vivo|sono) (a|in|di|da) \w+|\bsono brasilian\w*/),'Cidade / origem (Abito a…)'],[has(/\b(lavoro|faccio|sono (un |una |l |il |la )?(ingegner|medic|insegnant|impiegat|student|avvocat|imprenditor|architett|professor|commercial|tecnic|direttor|manager)\w*|studio)\b/),'Trabalho (Lavoro… / Faccio l\'ingegnere)'],
+    [has(/\b(mi piace|mi piacciono|amo|adoro)\b/),'Do que gosta (Mi piace…)'],[has(/\b(a presto|baci|bacio|un abbraccio|saluti|ci vediamo|ciao)\W*\w*\W*\w*\s*$/)||has(/\b(a presto|un abbraccio|ci vediamo|saluti|baci)\b/),'Despedida (A presto!)']];
+  let pts=c.filter(x=>x[0]).length*1.25;c.forEach(x=>f.push(x));
+  const okLen=n>=20,midLen=n>=12;pts+=okLen?1.5:midLen?.75:0;f.push([okLen,'Tamanho: '+n+' palavras (pedido: 20 a 40)']);
+  const okIt=ratio>=.7;pts+=okIt?1:0;f.push([okIt,'Escrito em italiano']);if(ratio<.4)pts=Math.min(pts,2);
+  return{pts:Math.round(Math.min(10,pts)),f}}
+function mkForm(){return{lvl:'free',kind:'form',free:true,it:'Modulo di iscrizione',pt:'Preencher a ficha de inscrição',e:'📝',art:'',alt:[],wt:1.5}}
+function mkMsg(){return{lvl:'free',kind:'msg',free:true,it:'Messaggio a Luca',pt:'Escrever uma mensagem curta (20–40 palavras)',e:'✉️',art:'',alt:[],wt:2.5}}
+function drawFree(w,p){p.classList.remove('multi','single');p.style.cssText='';const box=document.createElement('div');box.className='free';
+  if(w.kind==='form'){box.innerHTML='<b class="ft">MODULO DI ISCRIZIONE · Corso di cucina</b><small class="fpt">Preencha a ficha em italiano.</small>'+[['nome','Nome'],['cognome','Cognome'],['naz','Nazionalità'],['eta','Età (in lettere)'],['citta','Città'],['prof','Professione']].map(([k,l])=>'<label>'+l+'<input data-k="'+k+'" autocapitalize="off" autocorrect="off" spellcheck="false"></label>').join('')}
+  else box.innerHTML='<b class="ft">Scrivi un messaggio a Luca, un amico italiano (20–40 parole).</b><small class="fpt">Cumprimente, apresente-se (nome, cidade, trabalho), diga do que gosta e despeça-se.</small><textarea rows="5" autocapitalize="sentences" autocorrect="off" spellcheck="false" placeholder="Ciao Luca! …"></textarea><small class="wc">0 palavras</small>';
+  const b=document.createElement('button');b.type='button';b.className='fsend';b.textContent='Enviar ✓';b.addEventListener('click',()=>submitFree());box.append(b);
+  const ta=box.querySelector('textarea');if(ta)ta.addEventListener('input',()=>{box.querySelector('.wc').textContent=ta.value.trim().split(/\s+/).filter(Boolean).length+' palavras'});
+  p.append(box)}
+function submitFree(){if(phase!=='ask')return;const w=deck[idx],box=$('pic').querySelector('.free');if(!box)return;phase='done';
+  let g;if(w.kind==='form'){const v={};box.querySelectorAll('input').forEach(i=>v[i.dataset.k]=i.value);g=gradeForm(v)}else g=gradeMsg(box.querySelector('textarea').value);
+  box.querySelectorAll('input,textarea').forEach(i=>{i.blur();i.disabled=true});res[idx]=g.pts;score+=g.pts;if(g.pts>=6)hits++;else missed.push(w);emit('ans',{it:w.it,ok:g.pts>=6,free:true,pts:g.pts});
+  (g.pts>=6?sRight:sWrong)();const r=document.createElement('div');r.className='fres';r.innerHTML='<b>'+g.pts+' de 10</b>';
+  g.f.forEach(([ok,l])=>{const d=document.createElement('div');d.textContent=(ok?'✓ ':'✗ ')+l;d.className=ok?'ok':'no';r.append(d)});
+  const nx=document.createElement('button');nx.type='button';nx.className='fsend';nx.textContent='Continuar ▶';nx.addEventListener('click',()=>{clearTimeout(nextT);next()});r.append(nx);
+  box.querySelector('.fsend').replaceWith(r);hud();nextT=setTimeout(next,15000)}
 function testRes(){try{return JSON.parse(localStorage.getItem('italiano-testA1')||'null')}catch(e){return null}}
 function testPassed(){try{return localStorage.getItem('italiano-testA1-pass')==='1'}catch(e){return false}}
 
@@ -866,7 +931,7 @@ function check2(heard,w){ // devolve {ok, hint}
   if(numOk&&sgUsed)return{ok:false,hint:'Quase! Agora no plural.'};
   if(plOk)return{ok:false,hint:'Confira quantos são.'};
   return{ok:false}}
-function isRight(heard,w){return w.lvl==='x'?checkMix(heard,w).ok:(w.lvl===21||w.lvl===22||w.lvl===23)?checkPP(heard,w).ok:w.lvl===20?check20(heard,w).ok:w.lvl===19?check19(heard,w).ok:w.lvl===18?check18(heard,w).ok:w.lvl===17?check17(heard,w).ok:w.lvl===15?check15(heard,w).ok:w.lvl===14?check14(heard,w).ok:w.lvl===13?checkQ(heard,w).ok:w.lvl===12?checkA(heard,w).ok:w.lvl===8?checkV(heard,w).ok:w.lvl===9?checkW(heard,w).ok:w.lvl===10?checkX(heard,w).ok:w.lvl==='n'?checkN(heard,w).ok:w.lvl==='c'?checkC(heard,w).ok:w.lvl===3?check3(heard,w).ok:w.lvl===2?check2(heard,w).ok:matches(heard,w)}
+function isRight(heard,w){return w.lvl==='cz'?checkCz(heard,w).ok:w.lvl==='x'?checkMix(heard,w).ok:(w.lvl===21||w.lvl===22||w.lvl===23)?checkPP(heard,w).ok:w.lvl===20?check20(heard,w).ok:w.lvl===19?check19(heard,w).ok:w.lvl===18?check18(heard,w).ok:w.lvl===17?check17(heard,w).ok:w.lvl===15?check15(heard,w).ok:w.lvl===14?check14(heard,w).ok:w.lvl===13?checkQ(heard,w).ok:w.lvl===12?checkA(heard,w).ok:w.lvl===8?checkV(heard,w).ok:w.lvl===9?checkW(heard,w).ok:w.lvl===10?checkX(heard,w).ok:w.lvl==='n'?checkN(heard,w).ok:w.lvl==='c'?checkC(heard,w).ok:w.lvl===3?check3(heard,w).ok:w.lvl===2?check2(heard,w).ok:matches(heard,w)}
 
 /* ---------- estado ---------- */
 let res=[],tried=false,state='menu',deck=[],idx=0,score=0,lives=LIVES,hits=0,helped=false,timeLeft=TIME,phase='ask',missed=[],best=0,listening=false,last=0,nextT=null;
@@ -991,7 +1056,7 @@ function showType(on,now){$('typeForm').hidden=!on;$('kbSub').textContent=on?'ab
 $('kb').addEventListener('click',()=>{const w=deck[idx];if(state==='play'&&w&&w.write){showType(true,true);return}showType($('typeForm').hidden,true)});
 $('typeForm').addEventListener('submit',e=>{e.preventDefault();if(phase!=='ask')return;const v=$('typeIn').value;if(!v.trim())return;heardShow(v);
   const w=deck[idx];if(isRight(v,w)){right();const g=spellNote(v,w);if(g)$('heard').textContent+=' · '+g}else{wrongTry(v);$('typeIn').select()}});
-function spellNote(v,w){if(w.lvl===13||w.lvl===17)return'';const c=t=>String(t).toLowerCase().replace(/[’`´]/g,"'").replace(/[^\p{L}\p{N}' ]/gu,' ').replace(/\s+/g,' ').trim(),a=c(v),b=c(full(w));
+function spellNote(v,w){if(w.lvl===13||w.lvl===17||w.lvl==='cz')return'';const c=t=>String(t).toLowerCase().replace(/[’`´]/g,"'").replace(/[^\p{L}\p{N}' ]/gu,' ').replace(/\s+/g,' ').trim(),a=c(v),b=c(full(w));
   if(a===b)return'';if(norm(a)===norm(b))return'atenção aos acentos: '+full(w);return'escrita completa: '+full(w)}
 
 /* ---------- megafone ---------- */
@@ -1023,9 +1088,11 @@ function scene(w){const sc=document.createElement('div');sc.className='scene';co
   else{add('it tree','🌳','left:50%;top:97%');add('it',obj,(pos==='a destra'?'left:84%':'left:16%')+';top:97%')}
   return sc}
 function drawPic(w){const cap=$('cap');cap.hidden=!w.cap;cap.textContent=w.cap||'';
-  $('ask').textContent=w.lvl==='x'?w.ask:w.lvl===22?'Ieri… conte no passado (auxiliar essere!):':(w.lvl===21||w.lvl===23)?'Ieri… conte no passado:':w.lvl===20?(w.k==='l'?'Gosta ou não? Diga com “mi piace”:':'Diga em italiano:'):w.lvl===19?'Diga em italiano:':w.lvl===18?'Conjugue (verbo irregular!):':w.lvl===17?w.title+' · responda':w.lvl===16?'Faça a pergunta em italiano:':w.lvl===15?'Conjugue o verbo:':w.lvl===14?'Monte a frase (essere ou avere):':w.lvl===13?'Responda em italiano:':w.lvl===12?'Como é? Complete a frase':w.lvl===11?'O que se diz?':w.lvl===9||w.lvl===10?'Onde está?':w.lvl===8?'O que está acontecendo?':'Como se diz em italiano?';
+  $('ask').textContent=w.lvl==='free'?(w.kind==='form'?'Preencha a ficha:':'Escreva a mensagem:'):w.lvl==='cz'?'Complete a frase (escreva só a palavra que falta):':w.lvl==='x'?w.ask:w.lvl===22?'Ieri… conte no passado (auxiliar essere!):':(w.lvl===21||w.lvl===23)?'Ieri… conte no passado:':w.lvl===20?(w.k==='l'?'Gosta ou não? Diga com “mi piace”:':'Diga em italiano:'):w.lvl===19?'Diga em italiano:':w.lvl===18?'Conjugue (verbo irregular!):':w.lvl===17?w.title+' · responda':w.lvl===16?'Faça a pergunta em italiano:':w.lvl===15?'Conjugue o verbo:':w.lvl===14?'Monte a frase (essere ou avere):':w.lvl===13?'Responda em italiano:':w.lvl===12?'Como é? Complete a frase':w.lvl===11?'O que se diz?':w.lvl===9||w.lvl===10?'Onde está?':w.lvl===8?'O que está acontecendo?':'Como se diz em italiano?';
   renderInto(w,$('pic'))}
 function renderInto(w,p){p.innerHTML='';
+  if(w.lvl==='cz'){p.classList.remove('multi','single');const mk=(t,c,x)=>{const e=document.createElement(t);e.className=c;e.textContent=x;return e};const d=mk('div','ttext cz','');d.append(mk('span','',w.q),mk('small','','( '+w.hint+' )'));p.append(d);return}
+  if(w.lvl==='free'){drawFree(w,p);return}
   if(w.lvl==='x'){p.style.display='';p.style.flexDirection='';p.style.alignItems='';p.style.gap='';p.style.fontSize='';mixPic(w,p);return}
   const mini=p.classList.contains('mini'),el=(t,c,tx)=>{const d=document.createElement(t);if(c)d.className=c;if(tx!=null)d.textContent=tx;return d};
   if(w.lvl==='t'){p.classList.remove('multi','single');p.append(el('div','ttext',w.label));return}
@@ -1054,7 +1121,7 @@ function renderInto(w,p){p.innerHTML='';
 function hearts(){const l=Math.max(0,Math.min(LIVES,lives));$('hearts').textContent='❤️'.repeat(l)+'🤍'.repeat(LIVES-l)}
 function hud(){$('pts').innerHTML=score+'<small>pts</small>';hearts();$('count').textContent=(level===24?'Passo ':level>=21&&level<=23?'Verbo ':level===18?'Verbo ':level===19||level===20?'Item ':level===17?'Passo ':level===99||(deck[idx]&&deck[idx].listen)?'Rodada ':level===13||level===16?'Pergunta ':level===2?'Número ':level===4?'Cor ':level>=8?'Frase ':'Palavra ')+Math.min(idx+1,deck.length)+' de '+deck.length}
 function show(){const w=deck[idx];phase='ask';helped=false;tried=false;
-  if(level===50)TIME=w.sec==='L'?45:w.sec==='W'?90:w.sec==='F'?(w.lvl===13?35:25):20;else TIME=w.write?Math.max(baseT,60):baseT;timeLeft=TIME;
+  if(level===50)TIME=w.kind==='msg'?420:w.kind==='form'?180:w.long?75:w.sec==='L'?45:w.sec==='W'?90:w.sec==='F'?(w.lvl===13?35:25):20;else TIME=w.write?Math.max(baseT,60):baseT;timeLeft=TIME;
   document.body.classList.toggle('reading',!!w.read);
   document.body.classList.toggle('listen',!!w.listen);if(w.listen)document.body.classList.remove('convo');
   if(w.listen&&w.read){drawOpts(w);const a=$('ask');a.textContent='';const sb=document.createElement('span');sb.className='secbadge';sb.textContent='📖 Leitura';
@@ -1062,14 +1129,16 @@ function show(){const w=deck[idx];phase='ask';helped=false;tried=false;
   if(w.listen){drawOpts(w);$('ask').textContent=w.askTxt?w.askTxt:w.story?w.title+' · 🎧 ouça e toque na resposta':w.follow?'🎧 Ouça a resposta e toque na certa':level===99?'Ouça e toque na figura certa':'🎧 Rodada de escuta: toque na figura certa';$('ask').hidden=false;tagReview(w);$('answer').hidden=true;$('ptxt').hidden=true;$('heard').textContent='';hud();setTimeout(()=>{if(phase==='ask')playIt()},300);return}
   document.body.classList.toggle('convo',!!w.qaudio);$('replay').textContent=w.lvl===17?'🔁 Repetir':w.qaudio?'🔁 Repetir pergunta':'🔊 Ouvir de novo';
   if(w.qaudio)setTimeout(()=>{if(phase==='ask'&&deck[idx]===w)say({...w,audio:w.qaudio,it:w.q},autoListen)},350);
-  else if(!w.write)setTimeout(()=>{if(deck[idx]===w)autoListen()},450);
+  else if(!w.write&&!w.free)setTimeout(()=>{if(deck[idx]===w)autoListen()},450);
   drawPic(w);tagReview(w);$('pic').classList.remove('pop','shake');void $('pic').offsetWidth;$('pic').classList.add('pop');
   $('ask').hidden=false;$('answer').hidden=true;$('ptxt').hidden=true;$('heard').textContent='';$('badge').hidden=true;$('hear').classList.remove('used');
   $('typeIn').value='';$('mic').disabled=false;hud();
-  const wasW=document.body.classList.contains('writing'),sec=level===50?(w.write?'✍️ Escrita · digite':'🎤 Fala · sem ajuda'):w.write?'✍️ Escreva em italiano':'';
+  const wasW=document.body.classList.contains('writing'),sec=level===50?(w.write||w.free?'✍️ Escrita · digite':'🎤 Fala · sem ajuda'):w.write?'✍️ Escreva em italiano':'';
   if(sec)$('ask').textContent=sec+' — '+$('ask').textContent;
   document.body.classList.toggle('writing',!!w.write);$('typeIn').placeholder=w.write?'toque aqui e escreva':'escreva em italiano';
-  if(w.write){if(listening||rec){killRec();listening=false;micUI()}$('mic').disabled=true;$('kb').disabled=false;$('typeIn').value='';showType(true);
+  document.body.classList.toggle('freew',!!w.free);
+  if(w.free){if(listening||rec){killRec();listening=false;micUI()}$('mic').disabled=true;$('kb').disabled=true;showType(false);$('note').textContent='✍️ Toque nos campos para escrever e depois em “Enviar”.'}
+  else if(w.write){if(listening||rec){killRec();listening=false;micUI()}$('mic').disabled=true;$('kb').disabled=false;$('typeIn').value='';showType(true);
     $('note').textContent='✍️ Toque na caixa para abrir o teclado e depois em OK. Números podem ser em algarismos (25 dicembre).'}
   else{$('kb').disabled=level===50&&!!SR;$('note').textContent=SR?'':'Este navegador não reconhece voz. Digite a palavra.';if(level===50||wasW)showType(!SR)}}
 function reveal(ok){const w=deck[idx];$('cap').hidden=true;$('ask').hidden=true;$('answer').hidden=false;$('answer').textContent=(w.lvl===13||w.lvl===17)&&ok&&lastSaid?'“'+lastSaid+'”':full(w);$('answer').className='answer '+(ok?'ok':'no');
@@ -1080,7 +1149,7 @@ function right(){if(phase!=='ask')return;phase='done';if(deck[idx].lvl===16&&!de
 function wrongTry(said){if(phase!=='ask')return;tried=true;sWrong();$('pic').classList.remove('shake','pop');void $('pic').offsetWidth;$('pic').classList.add('shake');
   const h=$('heard');if(!h.textContent)h.textContent='Não foi dessa vez.';
   const w=deck[idx],hint=!said?'':w.lvl==='x'?checkMix(said,w).hint:(w.lvl===21||w.lvl===22||w.lvl===23)?checkPP(said,w).hint:w.lvl===20?check20(said,w).hint:w.lvl===19?check19(said,w).hint:w.lvl===18?check18(said,w).hint:w.lvl===17?check17(said,w).hint:w.lvl===15?check15(said,w).hint:w.lvl===14?check14(said,w).hint:w.lvl===13?checkQ(said,w).hint:w.lvl===12?checkA(said,w).hint:w.lvl===8?checkV(said,w).hint:w.lvl===9?checkW(said,w).hint:w.lvl===10?checkX(said,w).hint:w.lvl==='n'?checkN(said,w).hint:w.lvl===3?check3(said,w).hint:w.lvl===2?check2(said,w).hint:'';h.insertAdjacentText('beforeend','  · '+(level===50?'tente de novo':hint||'tente de novo'))}
-function timeout(){if(phase!=='ask')return;phase='done';res[idx]=0;emit('ans',{it:deck[idx].it,ok:false,timeout:true,helped});if(listening||rec){killRec();listening=false;micUI()}lives--;missed.push(deck[idx]);sWrong();reveal(false);if(deck[idx].listen)markOpts();
+function timeout(){if(phase!=='ask')return;if(deck[idx].free){submitFree();return}phase='done';res[idx]=0;emit('ans',{it:deck[idx].it,ok:false,timeout:true,helped});if(listening||rec){killRec();listening=false;micUI()}lives--;missed.push(deck[idx]);sWrong();reveal(false);if(deck[idx].listen)markOpts();
   $('heard').textContent='Acabou o tempo!';if(!deck[idx].read&&!deck[idx].write)say(deck[idx]);hud();nextT=setTimeout(next,2400)}
 function next(){idx++;if((lives<=0&&level!==50)||idx>=deck.length){end();return}show()}
 
@@ -1207,7 +1276,7 @@ document.querySelectorAll('.tier[data-tier]').forEach(b=>b.addEventListener('cli
   $('tierMsg').textContent=t==='A2'?(b.dataset.open?'✅ A2 liberado! As primeiras lições (o passado: ho mangiato, sono andato) chegam na próxima atualização.':'🔒 A Fase A2 abre quando você passar no Teste A1 (dentro da Fase A1).'):'🔒 A Fase '+t+' vem depois. Vamos construir as lições e os testes dela.'}));
 showRecs();
 $('autoMic').checked=AUTO;$('autoMic').addEventListener('change',e=>{AUTO=e.target.checked;try{localStorage.setItem('italiano-automic',AUTO?'1':'0')}catch(_){}});
-function end(){state='over';phase='done';try{$('typeIn').blur()}catch(e){}$('typeForm').hidden=true;document.body.classList.remove('writing');if(listening||rec){killRec();listening=false;micUI()}const nb=score>best;if(nb){best=score;try{localStorage.setItem('italiano-f'+level+'-best',best)}catch(e){}}
+function end(){state='over';phase='done';document.body.classList.remove('freew');try{$('typeIn').blur()}catch(e){}$('typeForm').hidden=true;document.body.classList.remove('writing');if(listening||rec){killRec();listening=false;micUI()}const nb=score>best;if(nb){best=score;try{localStorage.setItem('italiano-f'+level+'-best',best)}catch(e){}}
   const pct=Math.round(score*100/Math.max(1,deck.length*10));
   if(level!==99&&level!==50){const h=histOf(level).concat(pct).slice(-3);try{localStorage.setItem('italiano-f'+level+'-hist',JSON.stringify(h))}catch(e){}
     $('oAvg').textContent='Nota da lição (média das últimas '+h.length+'): '+pctOf(level)+'% · '+stars(pctOf(level))}else $('oAvg').textContent='';
@@ -1217,15 +1286,15 @@ function end(){state='over';phase='done';try{$('typeIn').blur()}catch(e){}$('typ
   missed.forEach(w=>{const li=document.createElement('li');const e=document.createElement('span');e.className='e';if(w.lvl===13||w.lvl===17)e.textContent='💬';else if(w.lvl==='t')e.textContent=w.read?'📖':'🎧';else if(w.lvl===14||w.lvl===15||w.lvl===18||w.lvl===20||w.lvl===21||w.lvl===22||w.lvl===23)e.textContent=w.e;else if(w.lvl===19)e.textContent='🕒';else if(w.lvl===16)e.textContent=w.e;else if(w.lvl>=6)e.textContent=w.e;else if(w.lvl==='n'){e.textContent=w.n;e.style.fontFamily='var(--display)'}else if(w.lvl==='c'){e.style.cssText='display:inline-block;width:24px;height:24px;border-radius:50%;border:2px solid rgba(0,0,0,.2);background:'+w.hex}else if(w.lvl===3){const c=tintedCopy(w.e,w.hex);c.style.cssText='width:26px;height:26px;vertical-align:middle';if(w.n>1)e.append(w.n+'×');e.append(c)}else e.textContent=w.lvl===2?w.n+'×'+w.e:w.e;const t=document.createElement('span');t.textContent=full(w);
     const b=document.createElement('button');b.type='button';b.textContent='📢';b.setAttribute('aria-label','Ouvir '+full(w));b.addEventListener('click',()=>{unlockAudio();say(w)});if(w.read){t.textContent=w.rtext.replace(/\n/g,' · ')+' → '+w.it;li.append(e,t)}else li.append(e,t,b);ul.append(li)});
   $('examBox').hidden=true;$('verdict').hidden=true;
-  if(level===50){const sc={};for(const k in SECN){const ids=deck.map((w,i)=>w.sec===k?i:-1).filter(i=>i>=0);sc[k]=Math.round(ids.reduce((a,i)=>a+(res[i]||0),0)*100/(ids.length*10))}
-    const tot=Math.round(Object.values(sc).reduce((a,b)=>a+b,0)/4),pass=tot>=70&&Object.values(sc).every(v=>v>=60);
+  if(level===50){const sc={};for(const k in SECN){const ids=deck.map((w,i)=>w.sec===k?i:-1).filter(i=>i>=0);sc[k]=Math.round(ids.reduce((a,i)=>a+(res[i]||0)*(deck[i].wt||1),0)*100/ids.reduce((a,i)=>a+10*(deck[i].wt||1),0))}
+    const tot=Math.round(Object.values(sc).reduce((a,b)=>a+b,0)/4),pass=tot>=PASS_T&&Object.values(sc).every(v=>v>=PASS_P);
     const prev=testRes();try{localStorage.setItem('italiano-testA1',JSON.stringify({tot,sc,pass,d:new Date().toISOString().slice(0,10),best:Math.max(tot,prev&&prev.best||0)}));if(pass)localStorage.setItem('italiano-testA1-pass','1')}catch(e){}
-    $('oTitle').textContent=pass?'Aprovado no A1! 🎉':'Ainda não foi desta vez';$('oPct').textContent=tot+'%';$('oAvg').textContent='Para aprovar: 70% no total e 60% em cada parte.';
+    $('oTitle').textContent=pass?'Aprovado no A1! 🎉':'Ainda não foi desta vez';$('oPct').textContent=tot+'%';$('oAvg').textContent='Para aprovar: '+PASS_T+'% no total e '+PASS_P+'% em cada parte (as provas oficiais pedem cerca de 55%).';
     const box=$('examBox');box.innerHTML='';box.hidden=false;
-    for(const k in SECN){const d=document.createElement('div');d.className='sk';const a=document.createElement('span');a.textContent=SECN[k];const b=document.createElement('span');b.textContent=sc[k]+'%'+(sc[k]<60?' ⚠️':'');
+    for(const k in SECN){const d=document.createElement('div');d.className='sk';const a=document.createElement('span');a.textContent=SECN[k];const b=document.createElement('span');b.textContent=sc[k]+'%'+(sc[k]<PASS_P?' ⚠️':'');
       const i=document.createElement('i');const e=document.createElement('em');e.style.width=sc[k]+'%';i.append(e);d.append(a,b,i);box.append(d)}
-    const weak=Object.keys(SECN).filter(k=>sc[k]<60).map(k=>SECN[k]);const v=$('verdict');v.hidden=false;v.className='verdict '+(pass?'ok':'no');
-    v.textContent=pass?'Você tem o A1. A Fase A2 está liberada.':(weak.length?'Reforce: '+weak.join(', ')+' (abaixo de 60%).':'Faltou chegar a 70% no total.')}
+    const weak=Object.keys(SECN).filter(k=>sc[k]<PASS_P).map(k=>SECN[k]);const v=$('verdict');v.hidden=false;v.className='verdict '+(pass?'ok':'no');
+    v.textContent=pass?'Você tem o A1. A Fase A2 está liberada.':(weak.length?'Reforce: '+weak.join(', ')+' (abaixo de '+PASS_P+'%).':'Faltou chegar a '+PASS_T+'% no total.')}
   emit('game',{score,pct:Math.round(score*100/Math.max(1,deck.length*10)),hits,total:deck.length,helped:nHelp,retries:nRetry,dur:Math.round((Date.now()-t0)/1000),missed:missed.map(w=>w.it).slice(0,30)});
   setTimeout(()=>{$('over').hidden=false},500)}
 
@@ -1237,7 +1306,7 @@ function tick(now){const dt=Math.min(.1,(now-(last||now))/1000);last=now;
 requestAnimationFrame(tick);
 hud();
 addEventListener('resize',()=>{if(document.body.classList.contains('listen'))fitOpts()});
-window.__ita={mixOf,checkMix,deck:()=>deck,type:v=>{$('typeIn').value=v;$('typeForm').requestSubmit()},st:()=>({state,phase,idx,score,lives,hits,word:deck[idx]&&deck[idx].it,w:deck[idx]}),matches,check14,check15,check17,deck17,deck14,deck15,Q16,follow16,mk14,mk15,PRED,PRON,VERBS15,A16,S17,slg,check18,check19,check20,deck18,deck19,deck20,mk18,mkH,mkD,mkM,mkDt,mkLike,mkNeg,IRR,HOURS,DAYS,MONTHS,DATES,V21,V22,V23,SUBJ22,S24,mkPP,mk22,checkPP,check17,deck24,deck22,deckPP,LIKES,NEG20,SPELL,PHONE,pctOf,histOf,deckTest,READ,testRes,res:()=>res,dictOf,addReview,openLearn,isRight,refresh:()=>showRecs(),check2,check3,checkN,checkC,checkA,checkQ,GREET,ADJS,CONVO,NUMS,deckL,variants,checkV,checkW,checkX,scene,FOOD,PEOPLE,VERBS,tintedCopy,WORDS,NOUNS2,NOUNS3,COLORS};
+window.__ita={gradeMsg,gradeForm,mixOf,checkMix,deck:()=>deck,type:v=>{$('typeIn').value=v;$('typeForm').requestSubmit()},st:()=>({state,phase,idx,score,lives,hits,word:deck[idx]&&deck[idx].it,w:deck[idx]}),matches,check14,check15,check17,deck17,deck14,deck15,Q16,follow16,mk14,mk15,PRED,PRON,VERBS15,A16,S17,slg,check18,check19,check20,deck18,deck19,deck20,mk18,mkH,mkD,mkM,mkDt,mkLike,mkNeg,IRR,HOURS,DAYS,MONTHS,DATES,V21,V22,V23,SUBJ22,S24,mkPP,mk22,checkPP,check17,deck24,deck22,deckPP,LIKES,NEG20,SPELL,PHONE,pctOf,histOf,deckTest,READ,testRes,res:()=>res,dictOf,addReview,openLearn,isRight,refresh:()=>showRecs(),check2,check3,checkN,checkC,checkA,checkQ,GREET,ADJS,CONVO,NUMS,deckL,variants,checkV,checkW,checkX,scene,FOOD,PEOPLE,VERBS,tintedCopy,WORDS,NOUNS2,NOUNS3,COLORS};
 if('serviceWorker' in navigator){addEventListener('load',()=>{navigator.serviceWorker.register('../sw.js',{scope:'../'}).catch(()=>{})})}
 // Aberto pelo Fliperama (?hub) mostra "voltar aos jogos"; aberto pelo link próprio funciona como app separado
 (()=>{let hub=false;try{if(new URLSearchParams(location.search).has('hub'))sessionStorage.setItem('ita-hub','1');hub=sessionStorage.getItem('ita-hub')==='1'}catch(e){}
