@@ -73,6 +73,7 @@ body{height:100%;margin:0;overflow:hidden;background:var(--paper);color:var(--in
 @keyframes pulse{0%{box-shadow:0 6px 0 #075c31,0 0 0 0 rgba(11,138,74,.5)}100%{box-shadow:0 6px 0 #075c31,0 0 0 22px rgba(11,138,74,0)}}
 .mic:disabled{opacity:.45}
 form.type{display:flex;gap:8px}
+.writing form.type{order:1}.writing .controls{order:2}.writing #note{order:3}.writing form.type input{border-color:var(--verde);box-shadow:0 0 0 4px rgba(47,158,68,.18);font-size:22px;padding:16px}.writing #mic{opacity:.35}
 form.type input{flex:1;min-width:0;font-family:var(--display);font-weight:600;font-size:20px;padding:12px 14px;border:2px solid var(--line);border-radius:14px;background:#fff;color:var(--ink)}
 form.type button{font-family:var(--display);font-weight:700;font-size:18px;border:0;border-radius:14px;padding:0 18px;background:var(--verde);color:#fff;cursor:pointer}
 .note{font-size:13px;font-weight:700;color:var(--muted);text-align:center;margin:0}
@@ -976,8 +977,9 @@ $('mic').addEventListener('click',()=>{ac();if(state!=='play'||phase!=='ask')ret
   retried=false;autoBlocked=false;startRec(true)});
 
 /* ---------- digitar ---------- */
-function showType(on){$('typeForm').hidden=!on;$('kbSub').textContent=on?'aberto':'se preferir';if(on)setTimeout(()=>$('typeIn').focus(),50)}
-$('kb').addEventListener('click',()=>showType($('typeForm').hidden));
+function showType(on,now){$('typeForm').hidden=!on;$('kbSub').textContent=on?'aberto':'se preferir';if(on){if(now)$('typeIn').focus();else setTimeout(()=>$('typeIn').focus(),50)}else $('typeIn').blur()}
+// no iPhone o teclado só abre se o foco vier do próprio toque
+$('kb').addEventListener('click',()=>{const w=deck[idx];if(state==='play'&&w&&w.write){showType(true,true);return}showType($('typeForm').hidden,true)});
 $('typeForm').addEventListener('submit',e=>{e.preventDefault();if(phase!=='ask')return;const v=$('typeIn').value;if(!v.trim())return;heardShow(v);
   if(isRight(v,deck[idx]))right();else{wrongTry(v);$('typeIn').select()}});
 
@@ -1041,7 +1043,7 @@ function renderInto(w,p){p.innerHTML='';
 function hearts(){const l=Math.max(0,Math.min(LIVES,lives));$('hearts').textContent='❤️'.repeat(l)+'🤍'.repeat(LIVES-l)}
 function hud(){$('pts').innerHTML=score+'<small>pts</small>';hearts();$('count').textContent=(level===24?'Passo ':level>=21&&level<=23?'Verbo ':level===18?'Verbo ':level===19||level===20?'Item ':level===17?'Passo ':level===99||(deck[idx]&&deck[idx].listen)?'Rodada ':level===13||level===16?'Pergunta ':level===2?'Número ':level===4?'Cor ':level>=8?'Frase ':'Palavra ')+Math.min(idx+1,deck.length)+' de '+deck.length}
 function show(){const w=deck[idx];phase='ask';helped=false;tried=false;
-  if(level===50)TIME=w.sec==='L'?45:w.sec==='W'?45:w.sec==='F'?(w.lvl===13?35:25):20;timeLeft=TIME;
+  if(level===50)TIME=w.sec==='L'?45:w.sec==='W'?90:w.sec==='F'?(w.lvl===13?35:25):20;timeLeft=TIME;
   document.body.classList.toggle('reading',!!w.read);
   document.body.classList.toggle('listen',!!w.listen);if(w.listen)document.body.classList.remove('convo');
   if(w.listen&&w.read){drawOpts(w);const a=$('ask');a.textContent='';const sb=document.createElement('span');sb.className='secbadge';sb.textContent='📖 Leitura';
@@ -1054,7 +1056,7 @@ function show(){const w=deck[idx];phase='ask';helped=false;tried=false;
   $('ask').hidden=false;$('answer').hidden=true;$('ptxt').hidden=true;$('heard').textContent='';$('badge').hidden=true;$('hear').classList.remove('used');
   $('typeIn').value='';$('mic').disabled=false;hud();
   if(level===50){const sec=w.write?'✍️ Escrita · digite':'🎤 Fala · sem ajuda';$('ask').textContent=sec+' — '+$('ask').textContent;
-    $('kb').disabled=!w.write&&!!SR;if(w.write){if(listening||rec){killRec();listening=false;micUI()}$('mic').disabled=true;showType(true)}else showType(!SR)}else $('kb').disabled=false}
+    $('kb').disabled=!w.write&&!!SR;document.body.classList.toggle('writing',!!w.write);$('typeIn').placeholder=w.write?'toque aqui e escreva':'escreva em italiano';if(w.write){if(listening||rec){killRec();listening=false;micUI()}$('mic').disabled=true;$('typeIn').value='';showType(true);$('note').textContent='✍️ Toque na caixa para abrir o teclado e depois em OK. Números podem ser em algarismos (25 dicembre).'}else{$('note').textContent=SR?'':$('note').textContent;showType(!SR)}}else{$('kb').disabled=false;document.body.classList.remove('writing')}}
 function reveal(ok){const w=deck[idx];$('cap').hidden=true;$('ask').hidden=true;$('answer').hidden=false;$('answer').textContent=(w.lvl===13||w.lvl===17)&&ok&&lastSaid?'“'+lastSaid+'”':full(w);$('answer').className='answer '+(ok?'ok':'no');
   $('ptxt').hidden=false;$('ptxt').textContent=(w.lvl===13||w.lvl===17)?(ok?'Exemplo: '+w.it:w.pt):w.pt;$('mic').disabled=true}
 function right(){if(phase!=='ask')return;phase='done';if(deck[idx].lvl===16&&!deck[idx].listen&&level!==50)deck.splice(idx+1,0,follow16(deck[idx]));const pts=helped?2:tried?5:10;res[idx]=pts;score+=pts;if(helped)nHelp++;if(tried)nRetry++;emit('ans',{it:deck[idx].it,ok:true,helped,tried});hits++;sRight();reveal(true);
@@ -1184,7 +1186,7 @@ document.querySelectorAll('.tier[data-tier]').forEach(b=>b.addEventListener('cli
   $('tierMsg').textContent=t==='A2'?(b.dataset.open?'✅ A2 liberado! As primeiras lições (o passado: ho mangiato, sono andato) chegam na próxima atualização.':'🔒 A Fase A2 abre quando você passar no Teste A1 (dentro da Fase A1).'):'🔒 A Fase '+t+' vem depois. Vamos construir as lições e os testes dela.'}));
 showRecs();
 $('autoMic').checked=AUTO;$('autoMic').addEventListener('change',e=>{AUTO=e.target.checked;try{localStorage.setItem('italiano-automic',AUTO?'1':'0')}catch(_){}});
-function end(){state='over';phase='done';if(listening||rec){killRec();listening=false;micUI()}const nb=score>best;if(nb){best=score;try{localStorage.setItem('italiano-f'+level+'-best',best)}catch(e){}}
+function end(){state='over';phase='done';try{$('typeIn').blur()}catch(e){}$('typeForm').hidden=true;document.body.classList.remove('writing');if(listening||rec){killRec();listening=false;micUI()}const nb=score>best;if(nb){best=score;try{localStorage.setItem('italiano-f'+level+'-best',best)}catch(e){}}
   const pct=Math.round(score*100/Math.max(1,deck.length*10));
   if(level!==99&&level!==50){const h=histOf(level).concat(pct).slice(-3);try{localStorage.setItem('italiano-f'+level+'-hist',JSON.stringify(h))}catch(e){}
     $('oAvg').textContent='Nota da lição (média das últimas '+h.length+'): '+pctOf(level)+'% · '+stars(pctOf(level))}else $('oAvg').textContent='';
