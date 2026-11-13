@@ -147,6 +147,10 @@ function hub(){
     <div style="text-align:right"><div class="big">${best<0?'–':best+'/40'}</div><span class="sub">recorde</span></div>
     <button class="btn-main" id="prova">Começar avaliação</button>
   </section>
+  <a class="card exam" href="../timoneiro/" style="text-decoration:none;color:inherit">
+    <div><h2>⛵ Timoneiro: pratique pilotando</h2><p class="sub">Jogo da lancha: balizamento, pontes, preferência, apito, fundeio e socorro</p></div>
+    <span class="btn-main" style="display:block;text-align:center;border-radius:14px;padding:13px">Jogar</span>
+  </a>
   <section class="topics">${TEMAS.map(t=>{const n=Q.filter(q=>q.t===t.id).length;const b=get('arrais-'+t.id+'-best',-1);const ac=get('arrais-'+t.id+'-acertos',-1);
     return `<article class="card topic"><span class="ico" aria-hidden="true">${t.icone}</span><h3>${esc(t.nome)}</h3>
     <span class="rec">${n} questões · ${b<0?'desafio não feito':`recorde <b>${b}</b> pts (${ac}/5)`}</span>
