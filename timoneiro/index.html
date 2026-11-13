@@ -671,7 +671,13 @@ function rules(dt){
     if(B.y>z.y0&&B.y<z.y1){if(!run.inR){run.inR=z}
       if(B.v*KN>6.5&&!z.fined){z.over=(z.over||0)+dt;if(z.over>2.5){z.fined=true;fine('Painel laranja com R: reduza a velocidade. Você passou a mais de 5 nós.')}}}else if(run.inR===z){run.inR=null;if(!z.fined)praise('Reduziu a velocidade na zona R.')}}
   // contra a correnteza: margem do seu boreste
-  if(W.keepRight&&!B.free&&!W.sand.some(s=>B.y>s.y0-120&&B.y<s.y1+60)&&!W.islands.some(i=>Math.abs(B.y-i.y)<i.ry+80)){const q=W.at(B.y);const onLeft=B.x<q.c-20;if(onLeft&&B.v>20){run.keepT+=dt;if(run.keepT>5){run.keepT=-12;fine('Subindo o rio contra a correnteza, navegue junto à margem do seu boreste (direita).')}}else run.keepT=Math.max(0,run.keepT-dt)}
+  if(W.keepRight&&!B.free&&!W.sand.some(s=>B.y>s.y0-120&&B.y<s.y1+60)&&!W.islands.some(i=>Math.abs(B.y-i.y)<i.ry+80)
+     &&!W.objs.some(o=>o.t==='bridge'&&B.y>o.y-320&&B.y<o.y+420)&&!W.rocks.some(k=>k.r&&Math.abs(B.y-k.y)<200)&&!W.vessels.some(v=>!v.judged&&!v.patrol&&Math.abs(v.y-B.y)<450)){ // trechos com ponte, pedra ou manobra ficam de fora
+    const q=W.at(B.y);const onLeft=B.x<q.c-20;
+    if(onLeft&&B.v>20){run.keepT+=dt;if(run.keepT>3&&!run.keepWarn){run.keepWarn=true;hint('↗️ Volte para a margem do seu <b>boreste</b> (direita): você está subindo contra a correnteza.',3500)}
+      if(run.keepT>8){run.keepT=-12;run.keepWarn=false;fine('Subindo o rio contra a correnteza, navegue junto à margem do seu boreste (direita).')}}
+    else{run.keepT=Math.max(0,run.keepT-dt*2);if(run.keepT===0)run.keepWarn=false}}
+  else if(W.keepRight)run.keepT=0
 }
 
 // ================= laço principal =================
