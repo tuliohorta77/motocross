@@ -53,12 +53,22 @@ button{font:inherit;cursor:pointer;color:inherit}
 #throttle .knob{position:absolute;left:72px;width:46px;height:30px;margin-left:-23px;border-radius:12px;transform:translateY(-50%);
   background:linear-gradient(180deg,#ff6b3d,#d7263d);box-shadow:0 4px 0 #8f1424,0 8px 14px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:11px}
 #throttle.off .knob{background:linear-gradient(180deg,#9aa9b4,#61717d);box-shadow:0 4px 0 #3b4650}
-#speed{position:fixed;right:max(122px,calc(env(safe-area-inset-right,0px) + 122px));bottom:calc(env(safe-area-inset-bottom,0px) + 18px);z-index:6;pointer-events:none}
+#speed{position:fixed;right:max(10px,env(safe-area-inset-right,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 258px);z-index:6;pointer-events:none}
 #speed .pill{text-align:center;min-width:64px}
 #speed b{font-family:var(--display);font-size:24px;font-weight:600;display:block}
 
+/* timão e axiômetro */
+#helm{position:fixed;left:max(8px,env(safe-area-inset-left,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 10px);width:176px;z-index:6;touch-action:none;display:flex;flex-direction:column;align-items:center;gap:4px}
+#helm .axio{position:relative;width:150px;height:26px;border-radius:13px;background:rgba(6,40,61,.82);box-shadow:0 4px 12px rgba(0,0,0,.3);overflow:hidden}
+#helm .axio::before{content:'';position:absolute;left:0;top:0;bottom:0;width:50%;background:linear-gradient(90deg,rgba(215,38,61,.55),rgba(215,38,61,0))}
+#helm .axio::after{content:'';position:absolute;right:0;top:0;bottom:0;width:50%;background:linear-gradient(270deg,rgba(19,154,82,.6),rgba(19,154,82,0))}
+#helm .axio span{position:absolute;top:5px;font-size:11px;font-weight:900;color:#fff;z-index:1}
+#helm .axio span.l{left:9px}#helm .axio span.r{right:9px}
+#helm .axio b{position:absolute;left:50%;top:3px;bottom:3px;width:2px;margin-left:-1px;background:rgba(255,255,255,.35);z-index:1}
+#helm .axio i{position:absolute;top:2px;bottom:2px;width:8px;margin-left:-4px;left:50%;border-radius:4px;background:#ffd166;box-shadow:0 0 8px #ffd166;z-index:2}
+#wheel{width:150px;height:150px;touch-action:none;filter:drop-shadow(0 8px 12px rgba(0,0,0,.45))}
 /* botões de ação */
-#acts{position:fixed;left:max(10px,env(safe-area-inset-left,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 18px);z-index:6;display:flex;flex-direction:column;gap:10px;align-items:flex-start}
+#acts{position:fixed;left:max(10px,env(safe-area-inset-left,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 206px);z-index:6;display:flex;flex-direction:column;gap:10px;align-items:flex-start}
 .act{border:0;border-radius:18px;padding:11px 14px;min-width:120px;font-weight:900;font-size:15px;text-align:left;background:var(--paper);box-shadow:0 5px 0 #b7a98a,0 10px 20px rgba(0,0,0,.3);display:flex;gap:8px;align-items:center}
 .act:active{transform:translateY(3px);box-shadow:0 2px 0 #b7a98a}
 .act.hot{background:#ffe08a;box-shadow:0 5px 0 #c9971a,0 10px 20px rgba(0,0,0,.3);animation:pulse 1.2s infinite}
@@ -147,6 +157,7 @@ button{font:inherit;cursor:pointer;color:inherit}
   <div class="knob" id="knob">◆</div>
 </div>
 <div id="acts" hidden></div>
+<div id="helm" hidden aria-label="Timão: gire com o dedo para governar; toque duas vezes para centralizar"><div class="axio"><span class="l">BB</span><b></b><i id="axN"></i><span class="r">BE</span></div><canvas id="wheel" width="300" height="300"></canvas></div>
 <div id="whistle" hidden></div>
 <div id="panel" hidden></div>
 
@@ -155,7 +166,7 @@ button{font:inherit;cursor:pointer;color:inherit}
     <div class="top"><a href="../">‹ Fliperama</a><a href="../arrais/">📘 Estudar a teoria</a></div>
     <div class="brand"><canvas id="logo" width="152" height="152"></canvas><div><h1>Timoneiro</h1><p>Pilote a lancha e use as regras do Arrais Amador: balizamento, pontes, preferência, sinais sonoros, fundeio e socorro.</p></div></div>
     <div id="lvls" style="display:flex;flex-direction:column;gap:10px"></div>
-    <p class="note">Como pilotar: arraste o dedo na água para a esquerda ou direita para virar o leme. A manete à direita acelera (para cima) e dá ré (para baixo). Regras conforme o material do curso (RIPEAM, IALA B e NORMAM); o jogo simplifica distâncias e tempos.</p>
+    <p class="note">Como pilotar: gire o timão (embaixo, à esquerda) com o dedo; ele fica onde você deixar, e o indicador BB/BE mostra o leme. Toque duas vezes no timão para centralizar. A manete à direita acelera (para cima) e dá ré (para baixo). Regras conforme o material do curso (RIPEAM, IALA B e NORMAM); o jogo simplifica distâncias e tempos.</p>
   </div>
 </section>
 <section class="screen" id="brief" hidden><div class="in" id="briefIn"></div></section>
@@ -209,12 +220,17 @@ pats();
 
 // ================= áudio (sintetizado) =================
 let AC=null,eng=null,engG=null;
-function ac(){if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}}if(AC&&AC.state!=='running')AC.resume();return AC}
+function ac(){try{if(navigator.audioSession&&navigator.audioSession.type!=='playback')navigator.audioSession.type='playback'}catch(e){}if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}}if(AC&&AC.state!=='running')AC.resume();return AC}
 function engineOn(){const a=ac();if(!a||eng)return;eng=a.createOscillator();eng.type='sawtooth';const f=a.createBiquadFilter();f.type='lowpass';f.frequency.value=380;engG=a.createGain();engG.gain.value=0;eng.connect(f);f.connect(engG);engG.connect(a.destination);eng.frequency.value=48;eng.start()}
 function engineSet(t){if(!eng)return;const a=AC;eng.frequency.setTargetAtTime(44+Math.abs(t)*70,a.currentTime,.2);engG.gain.setTargetAtTime(t===null?0:.025+Math.abs(t)*.05,a.currentTime,.2)}
 function tone(f,dur,type='sine',vol=.15,delay=0){const a=ac();if(!a)return;const o=a.createOscillator(),g=a.createGain();o.type=type;o.frequency.value=f;const t=a.currentTime+delay;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.03);g.gain.setValueAtTime(vol,t+dur-.06);g.gain.linearRampToValueAtTime(0,t+dur);o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+dur+.05)}
-function horn(pattern,base=196){let t=0;for(const c of pattern){const d=c==='-'?1.1:.32;tone(base,d,'sawtooth',.07,t);tone(base*1.5,d,'square',.035,t);t+=d+.22}return t}
+function horn(pattern,base=196){const a=ac();if(!a)return 0;let t=0;
+  for(const ch of pattern){const d=ch==='-'?1.25:.38,t0=a.currentTime+t+.02;const g=a.createGain(),f=a.createBiquadFilter();f.type='lowpass';f.frequency.value=1400;f.Q.value=2;g.connect(a.destination);f.connect(g);
+    g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(.22,t0+.05);g.gain.setValueAtTime(.22,t0+d-.08);g.gain.linearRampToValueAtTime(0,t0+d);
+    for(const [m,ty,v] of [[1,'sawtooth',.6],[1.26,'sawtooth',.4],[2,'square',.15]]){const o=a.createOscillator(),og=a.createGain();o.type=ty;o.frequency.value=base*m;o.detune.value=(Math.random()-.5)*8;og.gain.value=v;o.connect(og);og.connect(f);o.start(t0);o.stop(t0+d+.05)}
+    t+=d+.28}return t}
 function noise(dur,vol=.25,lp=900){const a=ac();if(!a)return;const b=a.createBuffer(1,a.sampleRate*dur,a.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*(1-i/d.length);const s=a.createBufferSource();s.buffer=b;const f=a.createBiquadFilter();f.type='lowpass';f.frequency.value=lp;const g=a.createGain();g.gain.value=vol;s.connect(f);f.connect(g);g.connect(a.destination);s.start()}
+['touchend','click'].forEach(ev=>addEventListener(ev,()=>{ac()},{passive:true}));
 const sfx={good(){tone(660,.12,'triangle',.12);tone(990,.18,'triangle',.12,.1)},bad(){tone(220,.25,'square',.08);tone(160,.35,'square',.08,.15)},crash(){noise(.6,.5,600);tone(80,.4,'sine',.3)},splash(){noise(.5,.3,1800)},
   siren(){for(let i=0;i<4;i++){tone(700,.2,'square',.05,i*.4);tone(950,.2,'square',.05,i*.4+.2)}},chain(){for(let i=0;i<10;i++)tone(900+Math.random()*400,.04,'square',.04,i*.06)}};
 
@@ -445,7 +461,7 @@ function newRun(L){
   W=buildLevel(L);const r0=W.at(-60);
   B={x:r0.c+(L.dir==='up'?40:0),y:-60,h:0,v:0,thr:0,rud:0,hull:3,sunk:false,ground:0,anch:null,engine:true,stopT:0,lastSide:0};
   if(W.current)B.x=W.at(-60).c+(W.current<0?50:0);
-  cam=B.y;parts=[];wake=[];LOG=[];throttle=.6;thrOff=false;
+  cam=B.y;parts=[];wake=[];LOG=[];BUB=[];throttle=.6;setWheel(0);thrOff=false;
   run={L,fines:0,errs:0,good:0,t:0,done:false,passed:new Set(),zoneWarn:{},keepT:0,inR:null,whistleNeed:null,vesNext:0,evtNext:0,step:null};
   W.objs.forEach(o=>o.done=false);
   W.vessels=[];
@@ -471,7 +487,7 @@ function smoke(x,y,col){parts.push({x:x+(Math.random()-.5)*6,y,vx:(Math.random()
 
 // ================= controles =================
 cv.addEventListener('pointerdown',e=>{ac();engineOn();if(touch.id!==null)return;touch.id=e.pointerId;touch.x0=e.clientX;touch.steer=0;cv.setPointerCapture(e.pointerId)});
-cv.addEventListener('pointermove',e=>{if(e.pointerId!==touch.id)return;touch.steer=clamp((e.clientX-touch.x0)/70,-1,1)});
+cv.addEventListener('pointermove',e=>{});
 const endT=e=>{if(e.pointerId!==touch.id)return;touch.id=null;touch.steer=0};
 cv.addEventListener('pointerup',endT);cv.addEventListener('pointercancel',endT);
 const keys={};addEventListener('keydown',e=>{keys[e.key]=1;if(e.key==='ArrowUp')setThr(throttle+.25);if(e.key==='ArrowDown')setThr(throttle-.25)});addEventListener('keyup',e=>keys[e.key]=0);
@@ -488,13 +504,42 @@ thrEl.addEventListener('pointermove',e=>{if(e.pointerId===thrDrag)moveThr(e)});
 thrEl.addEventListener('pointerup',()=>thrDrag=null);thrEl.addEventListener('pointercancel',()=>thrDrag=null);
 function moveThr(e){const r=thrEl.getBoundingClientRect(),h=r.height-36;setThr(1.5*(1-(e.clientY-r.top-18)/h)-.5)}
 
+// ================= timão =================
+const HELM={ang:0,max:270,id:null,last:0,tap:0};   // 270° = leme todo carregado
+(function drawWheel(){const c=$('wheel').getContext('2d'),R=150;c.translate(R,R);
+  // punhos
+  for(let i=0;i<8;i++){c.save();c.rotate(i*TAU/8);const g=c.createLinearGradient(-9,0,9,0);g.addColorStop(0,'#5a3418');g.addColorStop(.5,'#b97a3e');g.addColorStop(1,'#5a3418');c.fillStyle=g;rr(c,-9,-146,18,40,9);c.fill();c.fillStyle='#d9a066';c.beginPath();c.arc(0,-140,6,0,TAU);c.fill();c.restore()}
+  // raios
+  for(let i=0;i<8;i++){c.save();c.rotate(i*TAU/8);const g=c.createLinearGradient(-6,0,6,0);g.addColorStop(0,'#6b3e1c');g.addColorStop(.5,'#c88a4a');g.addColorStop(1,'#6b3e1c');c.fillStyle=g;rr(c,-6,-112,12,100,5);c.fill();c.restore()}
+  // aro
+  c.lineWidth=20;const rg=c.createRadialGradient(0,0,90,0,0,112);rg.addColorStop(0,'#6b3e1c');rg.addColorStop(.5,'#c88a4a');rg.addColorStop(1,'#5a3418');c.strokeStyle=rg;c.beginPath();c.arc(0,0,100,0,TAU);c.stroke();
+  c.lineWidth=2;c.strokeStyle='rgba(255,230,190,.45)';c.beginPath();c.arc(0,0,106,-2.6,-1.2);c.stroke();
+  // cubo de latão
+  const hg=c.createRadialGradient(-8,-8,2,0,0,28);hg.addColorStop(0,'#fff3b0');hg.addColorStop(.5,'#d4a72c');hg.addColorStop(1,'#7a5a10');c.fillStyle=hg;c.beginPath();c.arc(0,0,28,0,TAU);c.fill();
+  c.fillStyle='#7a5a10';c.beginPath();c.arc(0,0,9,0,TAU);c.fill();
+  // marca do meio (raio de cima com fita)
+  c.fillStyle='#d7263d';rr(c,-10,-122,20,10,3);c.fill()})();
+function setWheel(a){HELM.ang=clamp(a,-HELM.max,HELM.max);$('wheel').style.transform=`rotate(${HELM.ang}deg)`;$('axN').style.left=(50+HELM.ang/HELM.max*44)+'%'}
+(function(){const wl=$('wheel');const ang=e=>{const r=wl.getBoundingClientRect();return Math.atan2(e.clientY-(r.top+r.height/2),e.clientX-(r.left+r.width/2))*180/Math.PI};
+  wl.addEventListener('pointerdown',e=>{ac();engineOn();HELM.id=e.pointerId;HELM.last=ang(e);wl.setPointerCapture(e.pointerId);const now=performance.now();if(now-HELM.tap<320)setWheel(0);HELM.tap=now});
+  wl.addEventListener('pointermove',e=>{if(e.pointerId!==HELM.id)return;const a=ang(e);let d=a-HELM.last;if(d>180)d-=360;if(d<-180)d+=360;HELM.last=a;setWheel(HELM.ang+d)});
+  const up=e=>{if(e.pointerId===HELM.id)HELM.id=null};wl.addEventListener('pointerup',up);wl.addEventListener('pointercancel',up)})();
+
 // ================= apito =================
 const WH=[['.','1 curto'],['..','2 curtos'],['...','3 curtos'],['--.','2 longos + 1 curto'],['--..','2 longos + 2 curtos'],['-.-.','longo, curto, longo, curto'],['-','1 longo'],['.....','5 curtos']];
 function whistlePanel(open){const el=$('whistle');if(!open){el.hidden=true;return}
   el.innerHTML='<div class="ttl"><span>📯 Apito — escolha o sinal</span><button id="wX" aria-label="Fechar">✕</button></div>'+WH.map(([p,l])=>`<button class="wbtn" data-p="${p}" aria-label="${l}">${[...p].map(ch=>`<i class="${ch==='-'?'l':'s'}"></i>`).join('')}</button>`).join('');
   el.hidden=false;$('wX').onclick=()=>whistlePanel(false);el.querySelectorAll('.wbtn').forEach(b=>b.onclick=()=>{whistlePanel(false);blow(b.dataset.p)})}
-function blow(p){horn(p);B.lastWhistle={p,t:time};for(const v of W.vessels)v.onWhistle&&v.onWhistle(p)}
+function blow(p){ac();horn(p);bubble(B,p,true);hint('📯 Você apitou: <b>'+WH.find(w=>w[0]===p)[1]+'</b>',2600);B.lastWhistle={p,t:time};for(const v of W.vessels)v.onWhistle&&v.onWhistle(p)}
 
+let BUB=[];
+function bubble(o,p,mine){BUB.push({o,p,t:time,mine})}
+function drawBubbles(c){BUB=BUB.filter(b=>time-b.t<3.4);for(const b of BUB){const X=sx(b.o.x),Y=sy(b.o.y)-48*S,n=b.p.length;const w=(n*14+18)*S,h=22*S,a=Math.min(1,(3.4-(time-b.t))*2);
+  c.save();c.globalAlpha=a;c.fillStyle=b.mine?'rgba(255,250,240,.96)':'rgba(255,209,102,.97)';rr(c,X-w/2,Y-h/2,w,h,h/2);c.fill();c.beginPath();c.moveTo(X-5*S,Y+h/2-1);c.lineTo(X,Y+h/2+7*S);c.lineTo(X+5*S,Y+h/2-1);c.fill();
+  // marca o som em curso
+  let tt=0,el=time-b.t-.02;let x=X-w/2+9*S;for(const ch of b.p){const d=ch==='-'?1.25:.38,on=el>=tt&&el<tt+d;c.fillStyle=on?'#d7263d':'#13293d';const ww=(ch==='-'?18:7)*S;rr(c,x,Y-3.5*S,ww,7*S,3.5*S);c.fill();x+=ww+5*S;tt+=d+.28}
+  c.restore()}}
+function vesselHorn(v,p,txt){setTimeout(()=>{horn(p,150);bubble(v,p,false);if(txt)toast('📯 '+WH.find(w=>w[0]===p)[1],txt,'fine',3600)},0)}
 // ================= botões de ação contextuais =================
 function setActs(list){const el=$('acts');el.innerHTML='';for(const a of list){const b=document.createElement('button');b.className='act'+(a.hot?' hot':'');b.innerHTML=a.label;b.onclick=e=>{e.stopPropagation();ac();a.fn()};el.append(b)}el.hidden=!list.length}
 function baseActs(){const l=[{label:'📯 Apito',fn:()=>whistlePanel($('whistle').hidden)}];if(run&&run.extraActs)l.push(...run.extraActs);setActs(l)}
@@ -555,20 +600,20 @@ function spawnVessel(spec){
   const r=W.at(B.y+620),v={kind:spec.kind,mode:spec.mode,hull:spec.hull,seed:spec.seed||0,h:Math.PI,v:60,x:r.c,y:B.y+620,len:spec.kind==='barcaca'?110:50,done:false,t:0};
   const up=W.L.dir==='up'||W.L.dir==='in';
   if(spec.mode==='roda'){v.x=B.x;v.y=B.y+640;v.h=Math.PI;v.v=55;
-    v.ai=dt=>{const d=v.y-B.y;if(d<330){v.turn=true}if(v.turn){const tgt=Math.PI+.42;v.h+=(tgt-v.h)*dt*1.4} // guina para o boreste dela (esquerda da tela)
+    v.ai=dt=>{const d=v.y-B.y;if(d<330&&!v.turn){v.turn=true;vesselHorn(v,'.','A outra lancha apitou: estou guinando para boreste. Faça o mesmo!')}if(v.turn){const tgt=Math.PI+.42;v.h+=(tgt-v.h)*dt*1.4} // guina para o boreste dela (esquerda da tela)
       const r=W.at(v.y);v.x=clamp(v.x,r.c-r.w+28,r.c+r.w-28)};
     hint('Embarcação vindo de <b>frente</b> (roda a roda)! O que fazer?',4000);
     v.check=()=>{if(v.y<B.y-10&&!v.judged){v.judged=true;if(B.x>v.x+8){praise('Roda a roda: guinou para boreste e passou bombordo com bombordo.');toast('Boa manobra!','Roda a roda: as duas guinam para boreste.','good',2200);if(B.lastWhistle&&B.lastWhistle.p==='.'&&time-B.lastWhistle.t<12)praise('Avisou a guinada com 1 apito curto.')}else fine('Roda a roda: as duas embarcações guinam para BORESTE (direita). Você foi para bombordo.')}}}
   if(spec.mode==='cruzBE'||spec.mode==='cruzBB'){const fromR=spec.mode==='cruzBE';const r2=W.at(B.y+420);v.y=B.y+420;v.x=fromR?r2.c+r2.w+40:r2.c-r2.w-40;v.h=fromR?-Math.PI/2:Math.PI/2;v.v=42;
     hint(fromR?'Veleiro cruzando pela sua <b>direita (boreste)</b>…':'Lancha cruzando pela sua <b>esquerda (bombordo)</b>…',4000);
-    v.ai=dt=>{if(!fromR){const d=v.y-B.y;if(Math.abs(v.x-B.x)<120&&d<200&&d>-40){v.v=Math.max(8,v.v-dt*40)}else v.v=Math.min(42,v.v+dt*20)}};
+    v.ai=dt=>{if(!fromR){const d=v.y-B.y;if(Math.abs(v.x-B.x)<120&&d<200&&d>-40){if(!v.honk){v.honk=true;vesselHorn(v,'...','A lancha da esquerda apitou 3 curtos: está dando atrás para você passar.')}v.v=Math.max(8,v.v-dt*40)}else v.v=Math.min(42,v.v+dt*20)}};
     v.check=()=>{if(v.judged)return;if(B.y>v.y-6){v.judged=true;const crossedAhead=fromR?(v.x>B.x+10):(v.x<B.x-10);
       if(fromR){if(crossedAhead)fine('Rumos cruzados: a outra estava no seu BORESTE, então era você quem devia manobrar (reduzir e passar pela popa dela).');else{praise('Rumos cruzados: cedeu passagem a quem vinha por boreste.');toast('Certo!','Quem vê a outra por boreste manobra.','good',2200)}}
       else{praise('Rumos cruzados: com a outra no seu bombordo, você tinha preferência e manteve o rumo.');toast('Preferência sua','A outra vinha por bombordo: ela manobra, você mantém rumo e velocidade.','good',2600)}}}}
   if(spec.mode==='alcance'){const r3=W.at(B.y+260);v.x=r3.c;v.y=B.y+260;v.h=W.L.dir==='down'?0:0;v.v=24;v.dir=1;v.agreed=null;
     hint('Barcaça lenta à frente no canal. Para ultrapassar, <b>peça com o apito</b>.',5000);
-    v.onWhistle=p=>{if(v.judged)return;if(p==='--.'||p==='--..'){setTimeout(()=>{horn('-.-.',150);v.agreed=p==='--.'?'BE':'BB';toast('Concordo!','A barcaça respondeu: longo, curto, longo, curto. Ultrapasse por '+(v.agreed==='BE'?'boreste':'bombordo')+'.','good',3200)},900)}
-      else setTimeout(()=>{horn('.....',150);toast('5 apitos curtos','A barcaça não entendeu sua intenção (5 curtos = dúvida). Para ultrapassar por boreste: 2 longos e 1 curto.','bad',4200)},900)};
+    v.onWhistle=p=>{if(v.judged)return;if(p==='--.'||p==='--..'){setTimeout(()=>{horn('-.-.',150);bubble(v,'-.-.',false);v.agreed=p==='--.'?'BE':'BB';toast('Concordo!','A barcaça respondeu: longo, curto, longo, curto. Ultrapasse por '+(v.agreed==='BE'?'boreste':'bombordo')+'.','good',3200)},900)}
+      else setTimeout(()=>{horn('.....',150);bubble(v,'.....',false);toast('5 apitos curtos','A barcaça não entendeu sua intenção (5 curtos = dúvida). Para ultrapassar por boreste: 2 longos e 1 curto.','bad',4200)},900)};
     v.ai=dt=>{const r=W.at(v.y);let tx=r.c;if(v.agreed==='BE')tx=r.c-r.w*.45;if(v.agreed==='BB')tx=r.c+r.w*.45;v.x+=(tx-v.x)*dt*.6};
     v.check=()=>{if(v.judged)return;if(B.y>v.y+v.len/2){v.judged=true;const side=B.x>v.x?'BE':'BB';if(!v.agreed)fine('Ultrapassou sem pedir com o apito e sem o “concordo” da outra embarcação.');else if(side!==v.agreed)fine('Ultrapassou pelo lado diferente do combinado.');else praise('Ultrapassagem pedida e autorizada pelo apito.')}}}
   if(spec.mode==='fundeada'){const r4=W.at(B.y+600);v.x=r4.c+40;v.y=B.y+600;v.v=0;v.h=Math.PI*.95;v.anch=true;
@@ -686,14 +731,15 @@ function update(dt){
   const L=W.L;run.t+=dt;
   if(panelOpen&&slow===0){return}
   // leme e motor
-  const steer=touch.id!==null?touch.steer:(keys.ArrowLeft?-1:keys.ArrowRight?1:0);
-  B.rud+=(steer-B.rud)*Math.min(1,dt*8);
+  if(keys.ArrowLeft)setWheel(HELM.ang-200*dt);if(keys.ArrowRight)setWheel(HELM.ang+200*dt);
+  const steer=HELM.ang/HELM.max;
+  B.rud+=(steer-B.rud)*Math.min(1,dt*5);
   const tgt=B.engine&&!thrOff?throttle*150:0;
   if(!B.sunk){B.v+=(tgt-B.v)*Math.min(1,dt*(tgt<B.v?1.1:.7))}
   if(B.ground>0)B.v*=.9;
   if(B.anchored){B.v*=Math.pow(.2,dt)}
-  const turnK=B.rud*(.25+Math.min(1.4,Math.abs(B.v)/70))*(B.v<0?-.6:1);
-  if(!B.sunk&&!B.anchored)B.h+=turnK*dt*1.25;
+  const turnK=B.rud*(.12+Math.min(1,Math.abs(B.v)/110))*(B.v<0?-.6:1);   // leme macio: tudo carregado a toda força ≈ 1 rad/s
+  if(!B.sunk&&!B.anchored)B.h+=turnK*dt*.9;
   B.h=Math.atan2(Math.sin(B.h),Math.cos(B.h));
   if(!B.free&&!B.sunk){if(Math.abs(B.rud)<.08)B.h*=Math.pow(.55,dt);if(Math.abs(B.h)>1.25)B.h-=Math.sign(B.h)*Math.min(Math.abs(B.h)-1.25,dt*2.5)}
   B.x+=Math.sin(B.h)*B.v*dt;B.y+=Math.cos(B.h)*B.v*dt;
@@ -798,6 +844,7 @@ function render(){
   for(const o of W.objs)if(o.t==='bridge'&&o.y>y0-80&&o.y<y1+80)drawDeck(c,o);
   // partículas
   for(const p of parts){const f=1-p.t/p.life;if(p.smoke){c.fillStyle=`rgba(${p.col},${.55*f})`}else{c.fillStyle=p.col;c.globalAlpha=f}c.beginPath();c.arc(sx(p.x),sy(p.y),p.r*S,0,TAU);c.fill();c.globalAlpha=1}
+  drawBubbles(c);
   // vento (fundeio)
   if(W.wind&&run.anch&&run.anch.step!=='local')drawWind(c);
   if(day){const g=c.createRadialGradient(CW*.25,-CH*.1,0,CW*.25,-CH*.1,CH*1.1);g.addColorStop(0,'rgba(255,240,200,.16)');g.addColorStop(1,'rgba(0,0,0,0)');c.fillStyle=g;c.fillRect(0,0,CW,CH)}
@@ -875,7 +922,7 @@ function menuBg(){const c=cx;c.fillStyle='#06283d';c.fillRect(0,0,CW,CH)}
 
 // ================= painel e fluxo =================
 function hud(){$('hHearts').textContent='❤️'.repeat(Math.max(0,B.hull))+'🤍'.repeat(Math.max(0,3-B.hull));$('hFines').textContent=run.fines}
-function showPlay(on){['hud','speed','throttle'].forEach(i=>$(i).hidden=!on);if(on)baseActs();else{$('acts').hidden=true;whistlePanel(false);$('hint').hidden=true;$('panel').hidden=true;$('toast').innerHTML=''}}
+function showPlay(on){['hud','speed','throttle','helm'].forEach(i=>$(i).hidden=!on);if(on)baseActs();else{$('acts').hidden=true;whistlePanel(false);$('hint').hidden=true;$('panel').hidden=true;$('toast').innerHTML=''}}
 function startLevel(L){newRun(L);state='play';$('brief').hidden=true;$('menu').hidden=true;$('result').hidden=true;showPlay(true);$('hName').textContent=L.name;$('hSub').textContent='Fase '+L.id;hud();setKnob();
   hint(L.goal,3500);ac();engineOn()}
 function finish(ok,why){if(run.done)return;run.done=true;state='over';engineSet(null);
@@ -893,7 +940,7 @@ function finish(ok,why){if(run.done)return;run.done=true;state='over';engineSet(
 function brief(L){$('result').hidden=true;$('menu').hidden=true;const el=$('briefIn');
   el.innerHTML=`<div class="top"><button id="bMenu">‹ Fases</button><span></span></div><div class="bcard"><div class="k">Fase ${L.id} · ${L.sub}</div><h2>${L.name}</h2>
   ${L.brief.map(([ic,t])=>`<div class="rule"><canvas width="144" height="144" data-ic="${ic}"></canvas><p>${t}</p></div>`).join('')}
-  <p class="ctrls">🎯 ${L.goal} Arraste o dedo na água para virar; a manete à direita controla o motor. ❤️ Encalhar ou bater tira casco; regra de trânsito errada dá multa.</p>
+  <p class="ctrls">🎯 ${L.goal} Gire o timão para governar (toque duas vezes para centralizar); a manete à direita controla o motor. ❤️ Encalhar ou bater tira casco; regra de trânsito errada dá multa.</p>
   <button class="go" id="bGo">Partir ⛵</button></div>`;
   el.querySelectorAll('canvas[data-ic]').forEach(c=>icon(c.getContext('2d'),c.dataset.ic,144));
   $('brief').hidden=false;$('brief').scrollTop=0;$('bMenu').onclick=menu;$('bGo').onclick=()=>startLevel(L)}
