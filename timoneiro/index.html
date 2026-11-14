@@ -526,11 +526,12 @@ function setWheel(a){HELM.ang=clamp(a,-HELM.max,HELM.max);$('wheel').style.trans
   const up=e=>{if(e.pointerId===HELM.id)HELM.id=null};wl.addEventListener('pointerup',up);wl.addEventListener('pointercancel',up)})();
 
 // ================= apito =================
+const WHM={'.':'estou guinando para boreste','..':'estou guinando para bombordo','...':'estou dando atrás (máquinas a ré)','--.':'pretendo ultrapassar por boreste','--..':'pretendo ultrapassar por bombordo','-.-.':'concordo com a ultrapassagem','-':'atenção: aproximando de curva ou trecho sem visibilidade','.....':'dúvida: não entendi sua intenção (perigo)'};
 const WH=[['.','1 curto'],['..','2 curtos'],['...','3 curtos'],['--.','2 longos + 1 curto'],['--..','2 longos + 2 curtos'],['-.-.','longo, curto, longo, curto'],['-','1 longo'],['.....','5 curtos']];
 function whistlePanel(open){const el=$('whistle');if(!open){el.hidden=true;return}
   el.innerHTML='<div class="ttl"><span>📯 Apito — escolha o sinal</span><button id="wX" aria-label="Fechar">✕</button></div>'+WH.map(([p,l])=>`<button class="wbtn" data-p="${p}" aria-label="${l}">${[...p].map(ch=>`<i class="${ch==='-'?'l':'s'}"></i>`).join('')}</button>`).join('');
   el.hidden=false;$('wX').onclick=()=>whistlePanel(false);el.querySelectorAll('.wbtn').forEach(b=>b.onclick=()=>{whistlePanel(false);blow(b.dataset.p)})}
-function blow(p){ac();horn(p);bubble(B,p,true);hint('📯 Você apitou: <b>'+WH.find(w=>w[0]===p)[1]+'</b>',2600);B.lastWhistle={p,t:time};for(const v of W.vessels)v.onWhistle&&v.onWhistle(p)}
+function blow(p){ac();horn(p);bubble(B,p,true);hint('📯 Você apitou <b>'+WH.find(w=>w[0]===p)[1]+'</b>: “'+WHM[p]+'”',4000);B.lastWhistle={p,t:time};for(const v of W.vessels)v.onWhistle&&v.onWhistle(p)}
 
 let BUB=[];
 function bubble(o,p,mine){BUB.push({o,p,t:time,mine})}
@@ -539,7 +540,7 @@ function drawBubbles(c){BUB=BUB.filter(b=>time-b.t<3.4);for(const b of BUB){cons
   // marca o som em curso
   let tt=0,el=time-b.t-.02;let x=X-w/2+9*S;for(const ch of b.p){const d=ch==='-'?1.25:.38,on=el>=tt&&el<tt+d;c.fillStyle=on?'#d7263d':'#13293d';const ww=(ch==='-'?18:7)*S;rr(c,x,Y-3.5*S,ww,7*S,3.5*S);c.fill();x+=ww+5*S;tt+=d+.28}
   c.restore()}}
-function vesselHorn(v,p,txt){setTimeout(()=>{horn(p,150);bubble(v,p,false);if(txt)toast('📯 '+WH.find(w=>w[0]===p)[1],txt,'fine',3600)},0)}
+function vesselHorn(v,p,txt){setTimeout(()=>{horn(p,150);bubble(v,p,false);if(txt)toast('📯 '+WH.find(w=>w[0]===p)[1]+': “'+WHM[p]+'”',txt,'fine',4000)},0)}
 // ================= botões de ação contextuais =================
 function setActs(list){const el=$('acts');el.innerHTML='';for(const a of list){const b=document.createElement('button');b.className='act'+(a.hot?' hot':'');b.innerHTML=a.label;b.onclick=e=>{e.stopPropagation();ac();a.fn()};el.append(b)}el.hidden=!list.length}
 function baseActs(){const l=[{label:'📯 Apito',fn:()=>whistlePanel($('whistle').hidden)}];if(run&&run.extraActs)l.push(...run.extraActs);setActs(l)}
@@ -612,8 +613,8 @@ function spawnVessel(spec){
       else{praise('Rumos cruzados: com a outra no seu bombordo, você tinha preferência e manteve o rumo.');toast('Preferência sua','A outra vinha por bombordo: ela manobra, você mantém rumo e velocidade.','good',2600)}}}}
   if(spec.mode==='alcance'){const r3=W.at(B.y+260);v.x=r3.c;v.y=B.y+260;v.h=W.L.dir==='down'?0:0;v.v=24;v.dir=1;v.agreed=null;
     hint('Barcaça lenta à frente no canal. Para ultrapassar, <b>peça com o apito</b>.',5000);
-    v.onWhistle=p=>{if(v.judged)return;if(p==='--.'||p==='--..'){setTimeout(()=>{horn('-.-.',150);bubble(v,'-.-.',false);v.agreed=p==='--.'?'BE':'BB';toast('Concordo!','A barcaça respondeu: longo, curto, longo, curto. Ultrapasse por '+(v.agreed==='BE'?'boreste':'bombordo')+'.','good',3200)},900)}
-      else setTimeout(()=>{horn('.....',150);bubble(v,'.....',false);toast('5 apitos curtos','A barcaça não entendeu sua intenção (5 curtos = dúvida). Para ultrapassar por boreste: 2 longos e 1 curto.','bad',4200)},900)};
+    v.onWhistle=p=>{if(v.judged)return;if(p==='--.'||p==='--..'){setTimeout(()=>{horn('-.-.',150);bubble(v,'-.-.',false);v.agreed=p==='--.'?'BE':'BB';toast('📯 Longo, curto, longo, curto: “concordo”','A barcaça respondeu que concorda. Ultrapasse por '+(v.agreed==='BE'?'boreste':'bombordo')+'.','good',3200)},900)}
+      else setTimeout(()=>{horn('.....',150);bubble(v,'.....',false);toast('📯 5 curtos: “dúvida”','A barcaça não entendeu sua intenção. Para ultrapassar por boreste: 2 longos e 1 curto.','bad',4200)},900)};
     v.ai=dt=>{const r=W.at(v.y);let tx=r.c;if(v.agreed==='BE')tx=r.c-r.w*.45;if(v.agreed==='BB')tx=r.c+r.w*.45;v.x+=(tx-v.x)*dt*.6};
     v.check=()=>{if(v.judged)return;if(B.y>v.y+v.len/2){v.judged=true;const side=B.x>v.x?'BE':'BB';if(!v.agreed)fine('Ultrapassou sem pedir com o apito e sem o “concordo” da outra embarcação.');else if(side!==v.agreed)fine('Ultrapassou pelo lado diferente do combinado.');else praise('Ultrapassagem pedida e autorizada pelo apito.')}}}
   if(spec.mode==='fundeada'){const r4=W.at(B.y+600);v.x=r4.c+40;v.y=B.y+600;v.v=0;v.h=Math.PI*.95;v.anch=true;
