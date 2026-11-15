@@ -268,7 +268,7 @@ function drawBoat(c,x,y,h,k=1,o={}){
   // motor de popa
   c.fillStyle='#1d252d';rr(c,-B*.2,L*.45,B*.4,L*.13,2.5*k);c.fill();c.fillStyle='#3d4a55';rr(c,-B*.13,L*.47,B*.26,L*.05,1.5*k);c.fill();
   // luzes
-  if(o.lights!==false){c.fillStyle='#ff3040';c.beginPath();c.arc(-B*.38,-L*.22,1.5*k,0,TAU);c.fill();c.fillStyle='#22d36b';c.beginPath();c.arc(B*.38,-L*.22,1.5*k,0,TAU);c.fill()}
+  if(o.lights!==false){for(const [lx,col,hal] of [[-B*.38,'#ff3040','rgba(255,48,64,.35)'],[B*.38,'#22d36b','rgba(34,211,107,.35)']]){c.fillStyle=hal;c.beginPath();c.arc(lx,-L*.22,4.2*k,0,TAU);c.fill();c.fillStyle='#fff';c.beginPath();c.arc(lx,-L*.22,2.6*k,0,TAU);c.fill();c.fillStyle=col;c.beginPath();c.arc(lx,-L*.22,2.1*k,0,TAU);c.fill()}}
   c.restore();
 }
 function hullPath(c,L,B){c.beginPath();c.moveTo(0,-L/2);c.bezierCurveTo(B*.62,-L*.3,B*.54,L*.1,B*.48,L*.46);c.quadraticCurveTo(B*.46,L/2,B*.3,L/2);c.lineTo(-B*.3,L/2);c.quadraticCurveTo(-B*.46,L/2,-B*.48,L*.46);c.bezierCurveTo(-B*.54,L*.1,-B*.62,-L*.3,0,-L/2);c.closePath()}
@@ -756,7 +756,7 @@ function update(dt){
   engineSet(B.engine&&!thrOff&&!B.sunk?throttle:null);
   // rastro
   if(Math.abs(B.v)>8&&!B.sunk){const sx=B.x-Math.sin(B.h)*22,sy=B.y-Math.cos(B.h)*22;wake.push({x:sx,y:sy,h:B.h,t:0,v:Math.abs(B.v)});
-    if(Math.random()<Math.abs(B.v)/140){const s=Math.random()<.5?-1:1;parts.push({x:B.x+Math.sin(B.h)*14+Math.cos(B.h)*s*7,y:B.y+Math.cos(B.h)*14-Math.sin(B.h)*s*7,vx:Math.cos(B.h)*s*30,vy:-Math.sin(B.h)*s*30,life:.5,t:0,r:2+Math.random()*2,col:'#fff'})}}
+    if(Math.random()<Math.abs(B.v)/140){const s=Math.random()<.5?-1:1;parts.push({x:B.x+Math.sin(B.h)*2+Math.cos(B.h)*s*12,y:B.y+Math.cos(B.h)*2-Math.sin(B.h)*s*12,vx:Math.cos(B.h)*s*34-Math.sin(B.h)*20,vy:-Math.sin(B.h)*s*34-Math.cos(B.h)*20,life:.45,t:0,r:1.2+Math.random()*1.4,col:'#fff',under:true})}}
   for(const w of wake)w.t+=dt;while(wake.length&&wake[0].t>3.2)wake.shift();
   // câmera
   cam+=(B.y+(B.v<0?-40:0)-cam)*Math.min(1,dt*3);
@@ -839,6 +839,8 @@ function render(){
   // porto (fim das fases 1 e 5): píer e casas
   if(W.port)drawPort(c,y0,y1);
   if(W.sea)drawSeaEnd(c);
+  // borrifo do casco: por baixo da lancha, para não cobrir as luzes de bordo
+  for(const p of parts){if(!p.under)continue;c.globalAlpha=(1-p.t/p.life)*.8;c.fillStyle=p.col;c.beginPath();c.arc(sx(p.x),sy(p.y),p.r*S,0,TAU);c.fill()}c.globalAlpha=1;
   // objetos em ordem de profundidade
   const items=[];
   for(const o of W.objs)if(o.y>y0-80&&o.y<y1+120)items.push({y:o.y,f:()=>drawObj(c,o)});
@@ -850,7 +852,7 @@ function render(){
   // tabuleiro das pontes por cima da lancha
   for(const o of W.objs)if(o.t==='bridge'&&o.y>y0-80&&o.y<y1+80)drawDeck(c,o);
   // partículas
-  for(const p of parts){const f=1-p.t/p.life;if(p.smoke){c.fillStyle=`rgba(${p.col},${.55*f})`}else{c.fillStyle=p.col;c.globalAlpha=f}c.beginPath();c.arc(sx(p.x),sy(p.y),p.r*S,0,TAU);c.fill();c.globalAlpha=1}
+  for(const p of parts){if(p.under)continue;const f=1-p.t/p.life;if(p.smoke){c.fillStyle=`rgba(${p.col},${.55*f})`}else{c.fillStyle=p.col;c.globalAlpha=f}c.beginPath();c.arc(sx(p.x),sy(p.y),p.r*S,0,TAU);c.fill();c.globalAlpha=1}
   drawBubbles(c);
   // vento (fundeio)
   if(W.wind&&run.anch&&run.anch.step!=='local')drawWind(c);
