@@ -145,6 +145,7 @@ button{font:inherit;cursor:pointer;color:inherit}
 
 <div class="hud" id="hud" hidden>
   <button class="back" id="hBack" aria-label="Pausar e voltar">❚❚</button>
+  <button class="back snd" id="hSnd" aria-label="Som do jogo">🔊</button>
   <div class="pill" id="hTitle"><small id="hSub">Fase</small><b id="hName">—</b></div>
   <div class="pill" id="hHull"><small>Casco</small><span id="hHearts">❤️❤️❤️</span></div>
   <div class="pill"><small>Multas</small><span id="hFines">0</span></div>
@@ -163,7 +164,7 @@ button{font:inherit;cursor:pointer;color:inherit}
 
 <section class="screen" id="menu" hidden>
   <div class="in">
-    <div class="top"><a href="../">‹ Fliperama</a><a href="../arrais/">📘 Estudar a teoria</a></div>
+    <div class="top"><a href="../">‹ Fliperama</a><button class="snd" id="mSnd" aria-label="Som do jogo">🔊 Som</button><a href="../arrais/">📘 Teoria</a></div>
     <div class="brand"><canvas id="logo" width="152" height="152"></canvas><div><h1>Timoneiro</h1><p>Pilote a lancha e use as regras do Arrais Amador: balizamento, pontes, preferência, sinais sonoros, fundeio e socorro.</p></div></div>
     <div id="lvls" style="display:flex;flex-direction:column;gap:10px"></div>
     <p class="note">Como pilotar: gire o timão (embaixo, à esquerda) com o dedo; ele fica onde você deixar, e o indicador BB/BE mostra o leme. Toque duas vezes no timão para centralizar. A manete à direita acelera (para cima) e dá ré (para baixo). Regras conforme o material do curso (RIPEAM, IALA B e NORMAM); o jogo simplifica distâncias e tempos.</p>
@@ -220,7 +221,12 @@ pats();
 
 // ================= áudio (sintetizado) =================
 let AC=null,eng=null,engG=null;
-function ac(){try{if(navigator.audioSession&&navigator.audioSession.type!=='playback')navigator.audioSession.type='playback'}catch(e){}if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}}if(AC&&AC.state!=='running')AC.resume();return AC}
+// Som desligado: o jogo não cria áudio nem mexe na sessão de áudio do iPhone, então a música (do carro, do fone…) continua tocando.
+function ac(){if(SAVE.mute)return null;try{if(navigator.audioSession&&navigator.audioSession.type!=='playback')navigator.audioSession.type='playback'}catch(e){}if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}}if(AC&&AC.state!=='running')AC.resume();return AC}
+function setMute(m,init){SAVE.mute=m?1:0;save();
+  if(m&&!init){try{if(eng)eng.stop()}catch(e){}eng=null;engG=null;if(AC){try{AC.close()}catch(e){}AC=null}try{if(navigator.audioSession)navigator.audioSession.type='ambient'}catch(e){}}
+  else if(!init){ac();if(state==='play')engineOn()}
+  document.querySelectorAll('.snd').forEach(b=>{b.textContent=b.id==='mSnd'?(m?'🔇 Sem som':'🔊 Som'):(m?'🔇':'🔊')})}
 function engineOn(){const a=ac();if(!a||eng)return;eng=a.createOscillator();eng.type='sawtooth';const f=a.createBiquadFilter();f.type='lowpass';f.frequency.value=380;engG=a.createGain();engG.gain.value=0;eng.connect(f);f.connect(engG);engG.connect(a.destination);eng.frequency.value=48;eng.start()}
 function engineSet(t){if(!eng)return;const a=AC;eng.frequency.setTargetAtTime(44+Math.abs(t)*70,a.currentTime,.2);engG.gain.setTargetAtTime(t===null?0:.025+Math.abs(t)*.05,a.currentTime,.2)}
 function tone(f,dur,type='sine',vol=.15,delay=0){const a=ac();if(!a)return;const o=a.createOscillator(),g=a.createGain();o.type=type;o.frequency.value=f;const t=a.currentTime+delay;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.03);g.gain.setValueAtTime(vol,t+dur-.06);g.gain.linearRampToValueAtTime(0,t+dur);o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+dur+.05)}
@@ -951,6 +957,7 @@ function menu(){state='menu';W=null;showPlay(false);$('brief').hidden=true;$('re
     const c=b.querySelector('canvas'),g=c.getContext('2d');g.save();g.scale(176/72,132/72);g.translate(0,-(72-54)/2);icon(g,L.icon,72);g.restore();
     b.onclick=()=>{if(lock){toast('Fase trancada','Termine a fase anterior para liberar.','fine',1800);return}brief(L)};el.append(b)});
   $('menu').hidden=false}
+document.querySelectorAll('.snd').forEach(b=>b.onclick=e=>{e.stopPropagation();setMute(!SAVE.mute)});
 $('hBack').onclick=()=>{if(!run||run.done)return;ask({k:'Pausa',title:'Jogo pausado',opts:[{t:'▶ Continuar',ok:true},{t:'↻ Recomeçar a fase',ok:true},{t:'☰ Voltar às fases',ok:true}],onDone:(ok,i)=>{if(i===1)brief(W.L);if(i===2){engineSet(null);menu()}}});document.querySelector('#pwhy')||0;
   // pausa sem marcar certo/errado
   document.querySelectorAll('#panel .opt').forEach((b,i)=>b.onclick=()=>{$('panel').hidden=true;panelOpen=null;slow=1;if(i===1){engineSet(null);brief(W.L)}if(i===2){engineSet(null);menu()}})};
@@ -963,6 +970,7 @@ $('hBack').onclick=()=>{if(!run||run.done)return;ask({k:'Pausa',title:'Jogo paus
 function frame(t){const dt=Math.min(.05,(t-(last||t))/1000);last=t;try{update(dt*(slow===0?0:1));render()}catch(e){console.error(e)}requestAnimationFrame(frame)}
 requestAnimationFrame(frame);
 if(location.hash==='#todas'){SAVE.all=1}
+setMute(!!SAVE.mute,true);
 menu();
 // ganchos de teste
 window.__tm={get B(){return B},get W(){return W},get run(){return run},LEVELS,startLevel,setThr,blow,finish,menu};
