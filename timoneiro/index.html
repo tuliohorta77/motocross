@@ -461,8 +461,8 @@ function buildLevel(L){
   if(L.id===8){
     setRiver(300,1300,200,190);
     const P=880,M={P,fx:[],slots:[],boats:[],target:3,docked:false};
-    for(let i=0;i<8;i++)M.fx.push(46+i*44);                    // pés dos fingers
-    for(let i=0;i<7;i++){const x=68+i*44;M.slots.push(x);if(i!==3&&i!==5)M.boats.push({x,y:P-44,hull:['#f3c623','#ff8fab','#7fd1ff','#ffffff','#c7f9cc','#ffb703','#e0e0e0'][i]})}
+    for(let i=0;i<7;i++)M.fx.push(38+i*54);                    // fingers a cada 54: vaga com folga de ~13 de cada lado
+    for(let i=0;i<6;i++){const x=65+i*54;M.slots.push(x);if(i!==3&&i!==1)M.boats.push({x,y:P-44,hull:['#f3c623','#ff8fab','#7fd1ff','#ffffff','#c7f9cc','#ffb703'][i]})}
     W.marina=M;W.end=1e9;W.drift=4;
     for(let i=0;i<2;i++){const yy=260+i*230,r=W.at(yy);lat(yy,r.c,56)}
   }
@@ -718,12 +718,13 @@ function dropAnchor(){const A=run.anch;if(A.step!=='re')return;
 function cardSide(k,north){const n={0:0,'-1':270,1:90,2:180}[north],d={N:0,E:90,S:180,W:270}[k],a=(n+d)%360;return a===90?'R':a===270?'L':null}
 const NORTE_TXT={0:'para CIMA ↑','-1':'para a ESQUERDA ←',1:'para a DIREITA →',2:'para BAIXO ↓'};
 // ================= marina =================
-function boatPts(){const L=26,Bm=11,f=(a,b)=>({x:B.x+Math.sin(B.h)*a+Math.cos(B.h)*b,y:B.y+Math.cos(B.h)*a-Math.sin(B.h)*b});return[f(L,0),f(-L,0),f(14,Bm),f(14,-Bm),f(-18,Bm),f(-18,-Bm),f(0,Bm+1),f(0,-Bm-1)]}
+function boatPts(){const L=25,Bm=9,f=(a,b)=>({x:B.x+Math.sin(B.h)*a+Math.cos(B.h)*b,y:B.y+Math.cos(B.h)*a-Math.sin(B.h)*b});return[f(L,0),f(-L,0),f(10,Bm),f(10,-Bm),f(-16,Bm),f(-16,-Bm),f(-3,Bm+.5),f(-3,-Bm-.5)]}
 function marinaHit(p){const M=W.marina,P=M.P;if(p.y>P)return'píer';
   for(const fx of M.fx)if(Math.abs(p.x-fx)<4&&p.y>P-86)return'píer';
   for(const b of M.boats)if(Math.abs(p.x-b.x)<11&&Math.abs(p.y-b.y)<27)return'barco';return null}
 function marinaFlow(dt){const M=W.marina;if(!M||run.done)return;const P=M.P;
-  if(B.y>P-420){B.x+=W.drift*dt*(M.docked?0:1)}                       // vento de través
+  const abrigo=B.y>P-95&&Math.abs(B.x-M.slots[M.target])<26;            // entre os fingers o vento não pega
+  if(B.y>P-420&&!abrigo&&!M.docked){B.x+=W.drift*dt}                       // vento de través
   if(!M.asked&&B.y>P-430){M.asked=true;ask({k:'Atracação',title:'Chegando à marina. O que preparar antes de encostar?',
       opts:[{t:'Defensas no costado e cabos prontos na proa e na popa',ok:true,why:'Defensas protegem o casco; os cabos prontos permitem amarrar logo que encostar.'},{t:'Nada: é só entrar devagar',ok:false,why:'Prepare antes as defensas e os cabos, para não ficar sem amarrar nem riscar o casco.'},{t:'Largar o ferro na entrada',ok:false,why:'Âncora é para fundear, não para atracar no píer.'}],
       onDone:ok=>{ok?praise('Preparou defensas e cabos antes de atracar.'):(run.errs++,log('bad','Antes de atracar: defensas no costado e cabos prontos.'));M.fenders=true;hint('Entre na <b>vaga verde</b> a no máximo <b>3 nós</b>. Use a RÉ para frear. O vento empurra para a direita.',6000)}})}
@@ -733,9 +734,11 @@ function marinaFlow(dt){const M=W.marina;if(!M||run.done)return;const P=M.P;
   if(!M.docked&&(M.cool=(M.cool||0)-dt)<=0){for(const p of boatPts()){const h=marinaHit(p);if(!h)continue;M.cool=1;const fast=Math.abs(B.v)*KN>2.2;
       if(fast){damage(h==='barco'?'Bateu no barco vizinho: chegou rápido demais na vaga.':'Bateu no píer: chegou rápido demais.','Bateu!')}
       else if(!M['soft'+h]){M['soft'+h]=1;run.errs++;log('bad',h==='barco'?'Encostou no barco vizinho (as defensas seguraram, mas entre alinhado).':'Encostou no píer de leve. Entre alinhado no meio da vaga.');toast('Encostou!',h==='barco'?'Raspou no barco vizinho. Entre alinhado.':'Tocou no píer. Use a ré para segurar.','bad',2200)}
-      B.v=-B.v*.3;const back=Math.abs(B.v)<4?-6:B.v;B.v=back;break}}
+      if(fast||h==='píer'&&p.y>P){B.v=-Math.abs(B.v)*.3-4}
+      else{const q=W.at(B.y);B.x+=(p.x<B.x?2.5:-2.5);B.v*=.8}   // toque leve: a defensa escorrega e o barco continua
+      break}}
   // dentro da vaga, alinhado e parado
-  const sx0=M.slots[M.target],inSlot=Math.abs(B.x-sx0)<9&&B.y>P-62&&B.y<P-28&&Math.abs(B.h)<.22;
+  const sx0=M.slots[M.target],inSlot=Math.abs(B.x-sx0)<13&&B.y>P-64&&B.y<P-27&&Math.abs(B.h)<.28;
   if(!M.docked&&inSlot&&Math.abs(B.v)*KN<1){M.stay=(M.stay||0)+dt;if(M.stay>1.2){M.docked=true;B.v=0;praise('Atracou na vaga, alinhado e parado.');sfx.good();
       ask({k:'Atracação',title:'Encostou! Como amarrar a lancha no píer?',opts:[{t:'Cabos de proa, de popa e espringues',ok:true,why:'Proa e popa seguram o barco no lugar; os espringues impedem que ele corra para a frente e para trás.'},{t:'Só um cabo na proa',ok:false,why:'Com um cabo só, a lancha gira e bate no vizinho.'},{t:'Largar o ferro dentro da vaga',ok:false,why:'Na vaga, amarra-se com cabos ao píer.'}],
         onDone:ok=>{ok?praise('Amarrou com proa, popa e espringues.'):(run.errs++,log('bad','Amarração: cabos de proa, de popa e espringues.'));thrOff=true;throttle=0;setKnob();engineSet(null);setTimeout(()=>finish(true),700)}})}}
@@ -752,8 +755,8 @@ function drawMarina(c){const M=W.marina,P=M.P,Y=sy(P);if(Y<-300||Y>CH+300)return
   for(const fx of M.fx){const X=sx(fx);shadow(c,X+5*S,Y+46*S,6*S,44*S,.25);const g=c.createLinearGradient(X-4*S,0,X+4*S,0);g.addColorStop(0,'#8a5a33');g.addColorStop(.5,'#c08a55');g.addColorStop(1,'#7a4e2b');c.fillStyle=g;c.fillRect(X-4*S,Y,8*S,86*S);
     c.fillStyle='rgba(60,35,15,.35)';for(let y=0;y<86;y+=6)c.fillRect(X-4*S,Y+y*S,8*S,1*S);c.fillStyle='#e9e4da';c.beginPath();c.arc(X,Y+80*S,2.2*S,0,TAU);c.fill()}
   // vaga alvo
-  const tx=sx(M.slots[M.target]);c.save();c.strokeStyle=M.docked?'rgba(120,255,170,.95)':`rgba(120,255,170,${.55+.4*Math.sin(time*4)})`;c.lineWidth=3*S;c.setLineDash([8*S,6*S]);c.lineDashOffset=-time*14;rr(c,tx-17*S,Y+4*S,34*S,80*S,6*S);c.stroke();c.setLineDash([]);
-  c.fillStyle='rgba(120,255,170,.14)';rr(c,tx-17*S,Y+4*S,34*S,80*S,6*S);c.fill();c.fillStyle='#fff';c.font=`900 ${10*S}px Nunito,sans-serif`;c.textAlign='center';c.fillText('VAGA',tx,Y+96*S);c.restore();
+  const tx=sx(M.slots[M.target]);c.save();c.strokeStyle=M.docked?'rgba(120,255,170,.95)':`rgba(120,255,170,${.55+.4*Math.sin(time*4)})`;c.lineWidth=3*S;c.setLineDash([8*S,6*S]);c.lineDashOffset=-time*14;rr(c,tx-21*S,Y+4*S,42*S,80*S,6*S);c.stroke();c.setLineDash([]);
+  c.fillStyle='rgba(120,255,170,.14)';rr(c,tx-21*S,Y+4*S,42*S,80*S,6*S);c.fill();c.fillStyle='#fff';c.font=`900 ${10*S}px Nunito,sans-serif`;c.textAlign='center';c.fillText('VAGA',tx,Y+96*S);c.restore();
   // barcos atracados
   for(const b of M.boats)drawBoat(c,sx(b.x),sy(b.y),0,S*1.05,{hull:b.hull,stripe:'#24364a',lights:false});
 }
@@ -1056,7 +1059,7 @@ if(location.hash==='#todas'){SAVE.all=1}
 setMute(!!SAVE.mute,true);
 menu();
 // ganchos de teste
-window.__tm={get B(){return B},get W(){return W},get run(){return run},LEVELS,startLevel,setThr,blow,finish,menu};
+window.__tm={wheel:a=>setWheel(a),get B(){return B},get W(){return W},get run(){return run},LEVELS,startLevel,setThr,blow,finish,menu};
 })();
 </script>
 </body>
