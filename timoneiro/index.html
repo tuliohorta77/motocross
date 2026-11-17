@@ -119,6 +119,9 @@ button{font:inherit;cursor:pointer;color:inherit}
 .lv .st{font-size:15px;letter-spacing:1px;flex:none}
 .lv.lock{opacity:.5}
 .lv.lock .st{font-size:18px}
+.views{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:rgba(255,255,255,.08);border-radius:16px;padding:10px}.views span{font-weight:900;font-size:12px;letter-spacing:.1em;color:#8fd3ea;text-transform:uppercase;margin-right:4px}
+.views button{border:2px solid rgba(255,255,255,.18);background:transparent;color:#fff;border-radius:12px;padding:8px 10px;font-weight:800;font-size:14px}.views button.on{background:#fff;color:#06283d;border-color:#fff}
+#loading3d{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;background:rgba(6,40,61,.85);color:#fff;font-weight:900;font-size:18px}
 .note{color:#bfe3f2;font-size:13px;font-weight:700;line-height:1.4}
 .bcard{background:var(--paper);color:var(--ink);border-radius:22px;padding:16px;display:flex;flex-direction:column;gap:12px;box-shadow:0 20px 50px rgba(0,0,0,.35)}
 .bcard h2{font-family:var(--display);font-weight:600;font-size:24px;margin:0;line-height:1.15}
@@ -146,6 +149,7 @@ button{font:inherit;cursor:pointer;color:inherit}
 <div class="hud" id="hud" hidden>
   <button class="back" id="hBack" aria-label="Pausar e voltar">❚❚</button>
   <button class="back snd" id="hSnd" aria-label="Som do jogo">🔊</button>
+  <button class="back" id="hCam" aria-label="Trocar a visão">📷</button>
   <div class="pill" id="hTitle"><small id="hSub">Fase</small><b id="hName">—</b></div>
   <div class="pill" id="hHull"><small>Casco</small><span id="hHearts">❤️❤️❤️</span></div>
   <div class="pill"><small>Multas</small><span id="hFines">0</span></div>
@@ -166,6 +170,7 @@ button{font:inherit;cursor:pointer;color:inherit}
   <div class="in">
     <div class="top"><a href="../">‹ Fliperama</a><button class="snd" id="mSnd" aria-label="Som do jogo">🔊 Som</button><a href="../arrais/">📘 Teoria</a></div>
     <div class="brand"><canvas id="logo" width="152" height="152"></canvas><div><h1>Timoneiro</h1><p>Pilote a lancha e use as regras do Arrais Amador: balizamento, pontes, preferência, sinais sonoros, fundeio e socorro.</p></div></div>
+    <div class="views" id="views"><span>Visão</span><button data-v="top">🗺️ De cima</button><button data-v="cabine">🛥️ Pilotando (3D)</button><button data-v="perseg">🎥 Atrás (3D)</button></div>
     <div id="lvls" style="display:flex;flex-direction:column;gap:10px"></div>
     <p class="note">Como pilotar: gire o timão (embaixo, à esquerda) com o dedo; ele fica onde você deixar, e o indicador BB/BE mostra o leme. Toque duas vezes no timão para centralizar. A manete à direita acelera (para cima) e dá ré (para baixo). Regras conforme o material do curso (RIPEAM, IALA B e NORMAM); o jogo simplifica distâncias e tempos.</p>
   </div>
@@ -1053,10 +1058,29 @@ $('hBack').onclick=()=>{if(!run||run.done)return;ask({k:'Pausa',title:'Jogo paus
   drawBuoy(c,14,50,'lat-g',.75,0,{flat:true});drawBuoy(c,60,46,'lat-r',.75,0,{flat:true});drawBoat(c,37,42,.12,1);c.restore()})();
 
 // laço
-function frame(t){const dt=Math.min(.05,(t-(last||t))/1000);last=t;try{update(dt*(slow===0?0:1));render()}catch(e){console.error(e)}requestAnimationFrame(frame)}
+// ---- visão 3D (cabine / atrás): o mundo e as regras são os mesmos; só muda o desenho ----
+let VIEW=SAVE.view||'top',V3=null,V3load=null;if(/3d/.test(location.hash))VIEW='cabine';
+const API3={get W(){return W},get B(){return B},get run(){return run},get time(){return time},get wake(){return wake},get parts(){return parts},get shake(){return shake}};
+function ensure3d(){if(V3)return Promise.resolve(V3);if(!V3load){const ld=document.createElement('div');ld.id='loading3d';ld.textContent='Carregando a visão 3D…';document.body.append(ld);
+    V3load=import('./view3d.js').then(m=>{V3=m.create(API3,document.body);ld.remove();V3.setCam(VIEW==='top'?'cabine':VIEW);V3.show(VIEW!=='top');return V3}).catch(e=>{console.error(e);ld.remove();VIEW='top';toast('Sem 3D','Este aparelho não conseguiu abrir a visão 3D.','bad',3000);paintViews()})}return V3load}
+function setView(v){VIEW=v;SAVE.view=v;save();paintViews();if(v==='top'){if(V3)V3.show(false)}else ensure3d().then(x=>{if(x){x.setCam(v);x.show(true)}})}
+function paintViews(){document.querySelectorAll('#views button').forEach(b=>b.classList.toggle('on',b.dataset.v===VIEW));const hc=$('hCam');if(hc)hc.textContent=VIEW==='top'?'🗺️':VIEW==='cabine'?'🛥️':'🎥'}
+document.querySelectorAll('#views button').forEach(b=>b.onclick=()=>setView(b.dataset.v));
+$('hCam').onclick=e=>{e.stopPropagation();setView(VIEW==='top'?'cabine':VIEW==='cabine'?'perseg':'top')};
+function overlay3d(){const c=cx;c.setTransform(DPR,0,0,DPR,0,0);c.clearRect(0,0,CW,CH);if(!W)return;
+  if(B.sunk)run.sinkT=(run.sinkT||0)+.008;
+  // balões de apito sobre os barcos
+  BUB=BUB.filter(b=>time-b.t<3.4);for(const b of BUB){const q=V3.project(b.o.x,b.o.y,34);if(!q)continue;const [X,Y]=q,n=b.p.length,w=n*16+20,h=26,a=Math.min(1,(3.4-(time-b.t))*2);
+    c.save();c.globalAlpha=a;c.fillStyle=b.mine?'rgba(255,250,240,.96)':'rgba(255,209,102,.97)';rr(c,X-w/2,Y-h/2,w,h,h/2);c.fill();
+    let tt=0,el=time-b.t-.02,x=X-w/2+10;for(const ch of b.p){const d=ch==='-'?1.25:.38,on=el>=tt&&el<tt+d;c.fillStyle=on?'#d7263d':'#13293d';const ww=ch==='-'?20:8;rr(c,x,Y-4,ww,8,4);c.fill();x+=ww+6;tt+=d+.28}c.restore()}
+  // vento (fundeio), relativo à proa
+  if(W.wind&&run.anch&&run.anch.step!=='local'){const rel=W.wind.dir-B.h;c.save();c.translate(CW/2,CH*.2);c.fillStyle='rgba(6,40,61,.8)';c.beginPath();c.arc(0,0,34,0,TAU);c.fill();c.rotate(rel);c.strokeStyle='#fff';c.lineWidth=4;c.lineCap='round';c.beginPath();c.moveTo(0,-22);c.lineTo(0,22);c.moveTo(-8,12);c.lineTo(0,22);c.lineTo(8,12);c.stroke();c.restore();c.fillStyle='#fff';c.font='900 11px Nunito,sans-serif';c.textAlign='center';c.fillText('VENTO',CW/2,CH*.2+50)}
+  drawCompass(c)}
+function frame(t){const dt=Math.min(.05,(t-(last||t))/1000);last=t;try{update(dt*(slow===0?0:1));if(VIEW!=='top'&&V3&&W){V3.render();overlay3d()}else{if(V3)V3.show(false);render()}if(VIEW!=='top'&&V3&&W)V3.show(true)}catch(e){console.error(e)}requestAnimationFrame(frame)}
 requestAnimationFrame(frame);
 if(location.hash==='#todas'){SAVE.all=1}
 setMute(!!SAVE.mute,true);
+paintViews();if(VIEW!=='top')ensure3d();
 menu();
 // ganchos de teste
 window.__tm={wheel:a=>setWheel(a),get B(){return B},get W(){return W},get run(){return run},LEVELS,startLevel,setThr,blow,finish,menu};
